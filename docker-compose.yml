@@ -1,0 +1,18 @@
+services:
+  api:
+    build: ./api
+    ports:
+      - "8080:8080"
+    environment:
+      LOG_LEVEL: INFO
+      # Point this at a reachable Prometheus to light up the /lab page.
+      PROMETHEUS_URL: ${PROMETHEUS_URL:-http://localhost:9090}
+
+  web:
+    build: ./web
+    ports:
+      - "3000:3000"
+    environment:
+      API_BASE_URL: http://api:8080
+    depends_on:
+      - api

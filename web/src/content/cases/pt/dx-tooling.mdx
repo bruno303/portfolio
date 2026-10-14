@@ -1,0 +1,59 @@
+---
+title: "Developer experience: ferramentas pequenas que removem atrito diário"
+summary: "A camada sem glamour embaixo de todo o resto: um pacote Go que inicializa OpenTelemetry para serviços, GitHub Actions reutilizáveis e extensões de VS Code criadas para resolver incômodos do meu próprio fluxo."
+role: "Design e desenvolvimento"
+period: "Em andamento"
+stack: ["Go", "OpenTelemetry", "GitHub Actions", "TypeScript", "VS Code"]
+highlights:
+  - value: "go-toolkit"
+    label: "bootstrap de OTel usado em produção"
+  - value: "Actions"
+    label: "reutilizáveis entre repositórios"
+  - value: "2"
+    label: "extensões de VS Code próprias"
+links:
+  - label: "go-toolkit"
+    url: "https://github.com/bruno303/go-toolkit"
+  - label: "Workflows reutilizáveis"
+    url: "https://github.com/bruno303/github-actions"
+featured: false
+order: 4
+---
+
+## Contexto
+
+O trabalho de plataforma tem uma segunda metade que nunca aparece no diagrama de
+arquitetura: os pequenos atritos do dia a dia. Um serviço que leva uma tarde para
+configurar traces não vai ter traces. Um processo de review que depende de alguém
+lembrar de um checklist não vai ser aplicado.
+
+Então eu extraio ferramentas pequenas da repetição real — e apenas da repetição real.
+
+## O que construí
+
+- **go-toolkit.** Um pacote Go que inicializa OpenTelemetry — traces, métricas e logs —
+  para que um serviço ganhe observabilidade completa em poucas linhas. O backend do
+  planning-poker usa em produção; a interface de métricas também é o que permite
+  testar a camada de aplicação com mocks.
+- **GitHub Actions reutilizáveis.** Workflows (como o review por agente e helpers de CI)
+  publicados como actions reutilizáveis, para que um repositório novo ganhe o mesmo
+  processo referenciando uma versão — não copiando YAML por aí.
+- **Extensões de VS Code.** Duas pequenas, nascidas de incômodos diários com git
+  worktrees e sinais de processo, feitas para manter meu próprio ciclo curto.
+
+## Decisões e trade-offs
+
+- **Regra de três.** Uma ferramenta é extraída na terceira cópia, não na segunda. Isso
+  mantém o toolkit pequeno e cada abstração justificada por duplicação real.
+- **Entediante é uma virtude.** Essas ferramentas não têm plugins, evitam arquivos de
+  configuração quando possível e expõem poucas opções. Ou funcionam em dez segundos, ou
+  são bug.
+- **Resolver meu próprio problema primeiro.** Todas começaram como rascunho para um
+  fluxo que eu uso todos os dias. Nada aqui existe porque parecia útil em abstrato.
+
+## Resultados e próximos passos
+
+Essas ferramentas economizam minutos todos os dias e, mais importante, removem as
+desculpas para pular observabilidade ou processo. Próximo passo: promover o go-toolkit a
+módulo versionado para outros consumirem e continuar movendo trechos repetidos de Action
+para o repositório reutilizável.

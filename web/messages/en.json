@@ -1,0 +1,111 @@
+{
+  "meta": {
+    "title": "Bruno Oliveira — Senior Software Engineer",
+    "description": "Senior software engineer focused on backend and platform engineering: Go, Kotlin, Kubernetes, ArgoCD and observability. Case studies about real systems, including a self-hosted k3s homelab."
+  },
+  "nav": {
+    "cases": "Case studies",
+    "lab": "Lab",
+    "about": "About",
+    "cv": "CV"
+  },
+  "footer": {
+    "built": "Built with Next.js · Deployed to a k3s homelab with ArgoCD",
+    "source": "Source code"
+  },
+  "common": {
+    "toggleTheme": "Toggle theme",
+    "changeLanguage": "Change language",
+    "live": "live",
+    "loading": "Loading live data…",
+    "unavailable": "Live data is unavailable right now.",
+    "unavailableHint": "The metrics API is unreachable from here — the rest of the site keeps working. That is the point.",
+    "retry": "Retry",
+    "updated": "Updated {time}"
+  },
+  "home": {
+    "eyebrow": "Senior Software Engineer · Backend & Platform",
+    "lede": "12+ years building and operating backend platforms — Go, Kotlin, Kubernetes, GitOps and observability — with applied AI running in production.",
+    "stats": {
+      "years": { "value": "12+", "label": "years in software" },
+      "languages": { "value": "Go · Kotlin", "label": "primary languages" },
+      "platform": { "value": "k3s + ArgoCD", "label": "the platform I run at home" },
+      "reach": { "value": "Remote-first", "label": "teams across time zones" }
+    },
+    "cases": {
+      "title": "Case studies",
+      "subtitle": "Deep dives into systems I designed, built and operate — context, decisions, trade-offs and what I would change.",
+      "all": "All case studies"
+    },
+    "platform": {
+      "title": "This site is part of the portfolio",
+      "subtitle": "Shipped the same way the projects are: container images, GitOps and observability.",
+      "gitops": {
+        "title": "Deployed with GitOps",
+        "description": "Images are built in CI and deployed by ArgoCD to a k3s cluster, published through a Cloudflare Tunnel."
+      },
+      "live": {
+        "title": "Live metrics, curated",
+        "description": "The Lab page reads real CPU and memory numbers from Prometheus through a small Go API."
+      },
+      "open": {
+        "title": "Open source",
+        "description": "Web app, Go API and Helm chart are public in this repository."
+      },
+      "repo": "Browse the repository",
+      "lab": "Open the Lab page"
+    },
+    "contact": {
+      "title": "Let's talk",
+      "description": "I am open to senior backend and platform roles with remote-first teams.",
+      "github": "GitHub",
+      "linkedin": "LinkedIn",
+      "cv": "View CV"
+    }
+  },
+  "cases": {
+    "title": "Case studies",
+    "subtitle": "Systems I designed, built and operate. Each case follows the same structure: context, decisions, trade-offs and results.",
+    "role": "Role",
+    "period": "Period",
+    "stack": "Stack",
+    "links": "Links",
+    "back": "All case studies",
+    "fallback": "This case study is currently only available in English."
+  },
+  "lab": {
+    "title": "Lab",
+    "subtitle": "Live numbers from the homelab, read through a small Go API that queries Prometheus.",
+    "scope": "Only aggregated CPU and memory per deployment and a few curated application counters are published — no pod names, nodes or IPs.",
+    "servicesTitle": "Services",
+    "servicesSubtitle": "CPU and memory aggregated per deployment.",
+    "metricsTitle": "Planning poker",
+    "metricsSubtitle": "A few application counters from the planning-poker platform.",
+    "cpu": "CPU",
+    "memory": "Memory"
+  },
+  "about": {
+    "title": "About",
+    "subtitle": "Backend and platform engineer with 12+ years in software. Today I split my time between an applied-AI platform and the service platform other teams build on — and I run the whole stack at home to keep the platform skills honest.",
+    "timelineTitle": "Experience",
+    "educationTitle": "Education",
+    "skillsTitle": "Skills",
+    "languagesTitle": "Languages",
+    "present": "present",
+    "elsewhere": "Elsewhere"
+  },
+  "cv": {
+    "print": "Print / Save as PDF",
+    "summaryTitle": "Summary",
+    "experienceTitle": "Experience",
+    "educationTitle": "Education",
+    "skillsTitle": "Skills",
+    "languagesTitle": "Languages",
+    "summaryText": "Senior software engineer with 12+ years in software, focused on backend and platform engineering. Go, Kotlin and Java for services; Kubernetes, ArgoCD, Terraform and CI/CD for delivery; OpenTelemetry, Prometheus and Grafana for observability. Currently leading the technical side of an applied-AI platform that turns 300k+ support tickets per month into executive insight, with LLM pipelines designed so personally identifiable information never reaches the models."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist or was moved.",
+    "back": "Back to home"
+  }
+}

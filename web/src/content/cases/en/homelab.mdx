@@ -1,0 +1,87 @@
+---
+title: "Homelab: running a platform, not a pile of containers"
+summary: "A self-hosted k3s cluster managed entirely through GitOps: ArgoCD for delivery, External Secrets for credentials, an OpenTelemetry pipeline feeding Prometheus, Loki and Tempo, restic + rclone backups with a verifier, and zero ports open to the internet."
+role: "Design, operations and on-call"
+period: "Ongoing"
+stack: ["k3s", "ArgoCD", "Helm", "External Secrets", "OpenTelemetry", "Prometheus", "Grafana", "Cloudflare Tunnel", "restic"]
+highlights:
+  - value: "~15"
+    label: "services deployed via GitOps"
+  - value: "0"
+    label: "ports exposed to the internet"
+  - value: "weekly"
+    label: "offsite backups, restic + rclone"
+links:
+  - label: "Infra as code"
+    url: "https://github.com/bruno303/study-topics/tree/main/self_hosted"
+featured: true
+order: 1
+---
+
+## Context
+
+Any managed cloud hides most of the operational loop: you get DNS, TLS, scheduling,
+secrets and observability as line items. At home, every one of those is a decision —
+and that is exactly why it is useful. The goal was not to save money on Netflix
+hosting; it was to own the whole loop, from `kubectl` to restore drills.
+
+## What runs there
+
+A k3s cluster running services that matter to me: [Gitea](https://gitea.com) with CI
+runners, Vaultwarden, Immich, Jellyfin, Memos, n8n, ntfy, Open WebUI, PDFding and the
+homepage dashboard — plus the observability stack itself: OpenTelemetry Collector,
+Prometheus, Loki, Tempo and Grafana.
+
+Delivery is ArgoCD, one application per service, with the cluster's own configuration
+(GitOps settings, namespaces, repository config) applied as its own application.
+
+## Decisions and trade-offs
+
+- **GitOps or it does not exist.** Nothing is applied by hand. If it is not in Git, it
+  is a future incident. The chart or manifests in the repository are the only truth,
+  and drift is a bug.
+- **Secrets never live in Git.** External Secrets Operator syncs from external secret
+  stores per environment, so the repository can stay public-ish and still be safe.
+- **Tunnel in, not ports out.** Cloudflare Tunnel publishes services without opening a
+  single inbound port, and keeps the home IP invisible. TLS terminates at the edge.
+- **Observability as one pipeline.** Applications emit OTLP; a collector gateway fans
+  out traces to Tempo, metrics to Prometheus (remote write) and logs to Loki. Node-level
+  scraping stays in Prometheus. One pipeline means one place to debug when telemetry
+  disappears — which is itself an honest failure mode: it happened, and the fix was in
+  the collector's config, not in nine applications.
+- **Backups are code, and code gets tested.** `restic` snapshots go offsite with
+  `rclone` on a weekly schedule, driven by a Makefile, with a verifier that checks the
+  snapshots. The remaining gaps (etcd snapshots, a full restore drill) are tracked as
+  open items in the repository — public, because an honest TODO list is part of the
+  work, not a weakness.
+
+## Architecture
+
+<Mermaid chart={`graph LR
+  U[Internet] -->|HTTPS| CF[Cloudflare]
+  CF -->|Tunnel| T[Traefik ingress]
+  T --> S[Self-hosted apps]
+  S -->|OTLP| OC[OTel Collector]
+  OC --> TE[Tempo traces]
+  OC --> PR[Prometheus metrics]
+  OC --> LO[Loki logs]
+  GR[Grafana] --> TE
+  GR --> PR
+  GR --> LO
+  S -->|restic| BK[(Backup)]
+  BK -->|rclone| OFF[Offsite]
+`} caption="Public traffic arrives only through the tunnel; telemetry flows through a single OTel pipeline; backups leave the machine." />
+
+## Results and next steps
+
+Around fifteen services run unattended, deployments arrive by Git push, and the
+telemetry pipeline has become the same one the portfolio and the planning-poker app
+report to — which means problems in it get noticed immediately.
+
+What is next, already tracked in the repository:
+
+- etcd snapshot backups for the cluster's own state (the one thing restic does not
+  cover yet).
+- A real restore drill: restore Vaultwarden to a temporary directory and prove the
+  database opens.
+- Moving the last UI-configured pieces (Grafana datasources) into values files.

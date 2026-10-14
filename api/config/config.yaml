@@ -1,0 +1,42 @@
+# Default configuration, aimed at local development.
+#
+# Production overrides live in values-prod.yaml (Helm) and are rendered into a
+# ConfigMap. Keep the curated scope small: see docs/adr/0003-live-metrics-scope.md.
+
+server:
+  port: 8080
+  log_level: INFO
+  cors_allowed_origins:
+    - "http://localhost:3000"
+
+prometheus:
+  url: "http://localhost:9090"
+  query_timeout: 5s
+  cache_ttl: 15s
+
+# CPU and memory are aggregated over pods: no pod, node or IP is ever returned.
+services:
+  - id: planning-poker-api
+    name: "Planning Poker API"
+    namespace: production
+    pod_regex: "planning-poker-backend.*"
+  - id: planning-poker-web
+    name: "Planning Poker Web"
+    namespace: production
+    pod_regex: "planning-poker-frontend.*"
+
+# Curated application metrics. OTel counters land in Prometheus with a _total
+# suffix; the `or` fallback keeps queries working if that convention changes.
+custom_metrics:
+  - id: active_rooms
+    label: "Active rooms"
+    unit: count
+    query: 'sum(planning_poker_active_rooms_total)'
+  - id: active_users
+    label: "Active users"
+    unit: count
+    query: 'sum(planning_poker_active_users_total)'
+  - id: users_total
+    label: "Users that joined a room"
+    unit: count
+    query: 'sum(planning_poker_users_total_total or planning_poker_users_total)'

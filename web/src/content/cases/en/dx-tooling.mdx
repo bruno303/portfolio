@@ -1,0 +1,57 @@
+---
+title: "Developer experience: small tools that remove daily friction"
+summary: "The unglamorous layer under everything else: a Go package that bootstraps OpenTelemetry for services, reusable GitHub Actions, and VS Code extensions built to fix annoyances in my own workflow."
+role: "Design and development"
+period: "Ongoing"
+stack: ["Go", "OpenTelemetry", "GitHub Actions", "TypeScript", "VS Code"]
+highlights:
+  - value: "go-toolkit"
+    label: "OTel bootstrap used in production"
+  - value: "Actions"
+    label: "reusable across repositories"
+  - value: "2"
+    label: "in-house VS Code extensions"
+links:
+  - label: "go-toolkit"
+    url: "https://github.com/bruno303/go-toolkit"
+  - label: "Reusable workflows"
+    url: "https://github.com/bruno303/github-actions"
+featured: false
+order: 4
+---
+
+## Context
+
+Platform work has a second half that never makes it to the architecture diagram: the
+small frictions in the daily loop. A service that takes an afternoon to wire traces
+will not have traces. A review process that depends on someone remembering a checklist
+will not be applied.
+
+So I extract small tools from real repetition — and only from real repetition.
+
+## What I built
+
+- **go-toolkit.** A Go package that bootstraps OpenTelemetry — traces, metrics and
+  logs — so a service gets full observability in a handful of lines. The
+  planning-poker backend uses it in production; the plain metrics interface is also
+  what the mockable application layer tests against.
+- **Reusable GitHub Actions.** Workflows (like the agent review and the CI helpers)
+  published as reusable actions, so a new repository gets the same process by
+  referencing a version — not by copying YAML around.
+- **VS Code extensions.** Two small ones born from daily annoyances around git
+  worktrees and process signals, built to keep my own loops tight.
+
+## Decisions and trade-offs
+
+- **Rule of three.** A tool gets extracted after the third copy, not the second. This
+  keeps the toolkit small and every abstraction justified by real duplication.
+- **Boring is a feature.** These tools have no plugins, no configuration files when
+  avoidable, and few options. They either work in ten seconds or they are a bug.
+- **Solve my own problem first.** Every one of these started as a scratch-build for a
+  workflow I use every day. Nothing here exists because it sounded useful.
+
+## Results and next steps
+
+These tools save minutes every day and, more importantly, remove the reasons to skip
+observability or process. Next: promote go-toolkit to a versioned module others can
+depend on, and keep moving repeated Action snippets into the reusable repository.

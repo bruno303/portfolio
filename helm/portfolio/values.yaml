@@ -1,0 +1,102 @@
+nameOverride: portfolio
+fullnameOverride: portfolio
+
+# Next.js front end
+web:
+  image:
+    repository: ghcr.io/bruno303/portfolio-web
+    tag: "0.0.1"
+    pullPolicy: IfNotPresent
+  replicas: 1
+  port: 3000
+  imagePullSecrets: []
+  env:
+    # Must match the api Service below (<fullnameOverride>-api).
+    - name: API_BASE_URL
+      value: "http://portfolio-api:8080"
+  probes:
+    path: /
+    port: 3000
+    initialDelaySeconds: 10
+    periodSeconds: 15
+    failureThreshold: 3
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+      ephemeral-storage: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# Go metrics API (internal service; reached by the web BFF)
+api:
+  image:
+    repository: ghcr.io/bruno303/portfolio-api
+    tag: "0.0.1"
+    pullPolicy: IfNotPresent
+  replicas: 1
+  port: 8080
+  logLevel: INFO
+  imagePullSecrets: []
+  probes:
+    path: /healthz
+    port: 8080
+    initialDelaySeconds: 5
+    periodSeconds: 15
+    failureThreshold: 3
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+      ephemeral-storage: 64Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+  prometheus:
+    url: "http://prometheus-server.monitoring.svc.cluster.local"
+    queryTimeout: 5s
+    cacheTTL: 15s
+  corsAllowedOrigins:
+    - "https://portfolio.bsoapp.net"
+  # Curated scope: see docs/adr/0003-live-metrics-scope.md
+  services:
+    - id: planning-poker-api
+      name: "Planning Poker API"
+      namespace: production
+      podRegex: "planning-poker-backend.*"
+    - id: planning-poker-web
+      name: "Planning Poker Web"
+      namespace: production
+      podRegex: "planning-poker-frontend.*"
+  customMetrics:
+    - id: active_rooms
+      label: "Active rooms"
+      unit: count
+      query: 'sum(planning_poker_active_rooms_total)'
+    - id: active_users
+      label: "Active users"
+      unit: count
+      query: 'sum(planning_poker_active_users_total)'
+    - id: users_total
+      label: "Users that joined a room"
+      unit: count
+      query: 'sum(planning_poker_users_total_total or planning_poker_users_total)'
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# Ingress disabled by default; the deploy values enable it per environment.
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: portfolio.bsoapp.net
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []

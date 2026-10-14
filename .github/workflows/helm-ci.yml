@@ -1,0 +1,28 @@
+name: helm-ci
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'helm/**'
+      - '.github/workflows/helm-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'helm/**'
+      - '.github/workflows/helm-ci.yml'
+
+jobs:
+  lint:
+    name: Lint and render
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+
+      - name: Lint
+        run: helm lint helm/portfolio
+
+      - name: Render
+        run: helm template portfolio helm/portfolio > /dev/null

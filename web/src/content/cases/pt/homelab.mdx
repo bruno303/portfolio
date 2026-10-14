@@ -1,0 +1,87 @@
+---
+title: "Homelab: operando uma plataforma, não um monte de containers"
+summary: "Um cluster k3s self-hosted gerenciado inteiramente por GitOps: ArgoCD para entrega, External Secrets para credenciais, um pipeline de OpenTelemetry alimentando Prometheus, Loki e Tempo, backups com restic + rclone com verificador e zero portas abertas para a internet."
+role: "Design, operação e on-call"
+period: "Em andamento"
+stack: ["k3s", "ArgoCD", "Helm", "External Secrets", "OpenTelemetry", "Prometheus", "Grafana", "Cloudflare Tunnel", "restic"]
+highlights:
+  - value: "~15"
+    label: "serviços publicados via GitOps"
+  - value: "0"
+    label: "portas expostas para a internet"
+  - value: "semanal"
+    label: "backup offsite, restic + rclone"
+links:
+  - label: "Infra como código"
+    url: "https://github.com/bruno303/study-topics/tree/main/self_hosted"
+featured: true
+order: 1
+---
+
+## Contexto
+
+Qualquer cloud gerenciada esconde a maior parte do ciclo operacional: DNS, TLS,
+scheduling, secrets e observabilidade viram itens de fatura. Em casa, cada um desses é
+uma decisão — e é exatamente por isso que vale a pena. O objetivo não era economizar com
+hospedagem; era ser dono do ciclo inteiro, do `kubectl` ao teste de restore.
+
+## O que roda lá
+
+Um cluster k3s com serviços que importam para mim: Gitea com runners de CI, Vaultwarden,
+Immich, Jellyfin, Memos, n8n, ntfy, Open WebUI, PDFding e o dashboard de homepage — além
+da própria stack de observabilidade: OpenTelemetry Collector, Prometheus, Loki, Tempo e
+Grafana.
+
+A entrega é feita pelo ArgoCD, uma aplicação por serviço, com a configuração do próprio
+cluster aplicada como uma aplicação separada.
+
+## Decisões e trade-offs
+
+- **GitOps ou não existe.** Nada é aplicado na mão. Se não está no Git, é um incidente
+  futuro. Os manifests no repositório são a única verdade, e drift é bug.
+- **Secrets nunca vivem no Git.** O External Secrets Operator sincroniza de secret
+  stores por ambiente, então o repositório pode ficar público sem virar risco.
+- **Túnel para dentro, não portas para fora.** O Cloudflare Tunnel publica serviços sem
+  abrir uma única porta de entrada e mantém o IP de casa invisível.
+- **Observabilidade como um pipeline só.** As aplicações emitem OTLP; um gateway do
+  collector distribui traces para o Tempo, métricas para o Prometheus (remote write) e
+  logs para o Loki. Um pipeline significa um único lugar para depurar quando a
+  telemetria some — e isso aconteceu de verdade: o conserto foi na config do collector,
+  não em nove aplicações.
+- **Backup é código, e código é testado.** Snapshots com `restic` saem da máquina via
+  `rclone` semanalmente, guiados por um Makefile, com um verificador que confere os
+  snapshots. As lacunas restantes (snapshot de etcd, drill completo de restore) ficam
+  rastreadas no repositório — públicas, porque uma lista de TODO honesta faz parte do
+  trabalho, não é fraqueza.
+
+## Arquitetura
+
+<Mermaid chart={`graph LR
+  U[Internet] -->|HTTPS| CF[Cloudflare]
+  CF -->|Túnel| T[Traefik ingress]
+  T --> S[Apps self-hosted]
+  S -->|OTLP| OC[OTel Collector]
+  OC --> TE[Tempo traces]
+  OC --> PR[Prometheus métricas]
+  OC --> LO[Loki logs]
+  GR[Grafana] --> TE
+  GR --> PR
+  GR --> LO
+  S -->|restic| BK[(Backup)]
+  BK -->|rclone| OFF[Offsite]
+`} caption="Tráfego público chega apenas pelo túnel; telemetria flui por um único pipeline OTel; backups saem da máquina." />
+
+## Resultados e próximos passos
+
+Cerca de quinze serviços rodam sem supervisão, deploys chegam por Git push, e o pipeline
+de telemetria virou o mesmo para o qual o portfólio e o planning-poker reportam — ou
+seja, problemas nele são notados imediatamente.
+
+O que vem a seguir, já rastreado no repositório:
+
+- Snapshot de etcd para o estado do próprio cluster (a única coisa que o restic ainda
+  não cobre).
+- Um drill de restore de verdade: restaurar o Vaultwarden em um diretório temporário e
+  provar que o banco abre.
+- Migrar as últimas configurações feitas por UI (datasources do Grafana) para arquivos
+  de values.

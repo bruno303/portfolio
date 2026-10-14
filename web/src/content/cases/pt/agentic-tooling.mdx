@@ -1,0 +1,71 @@
+---
+title: "Ferramentas para desenvolvimento agêntico: comparar modelos, não impressões"
+summary: "Uma camada de orquestração que roda múltiplos agentes de código (OpenCode, Codex, Claude Code) em paralelo, cada um em um git worktree isolado, mais um harness de benchmark que compara modelos nas mesmas tarefas reais — qualidade, custo e latência."
+role: "Design e desenvolvimento"
+period: "Em andamento"
+stack: ["Go", "Git worktrees", "GitHub Actions", "LLM APIs", "Benchmarking"]
+highlights:
+  - value: "3+"
+    label: "CLIs de agente atrás de um harness"
+  - value: "worktrees"
+    label: "isolamento por tarefa"
+  - value: "/oc"
+    label: "review por agente via comentário em PR"
+links:
+  - label: "ai-orchestrator"
+    url: "https://github.com/bruno303/ai-orchestrator"
+  - label: "Workflows reutilizáveis"
+    url: "https://github.com/bruno303/github-actions"
+featured: true
+order: 3
+---
+
+## Contexto
+
+As ferramentas de código agênticas se consolidaram mais rápido do que as formas de
+avaliá-las. Toda semana surge um modelo novo para testar, e "esse parece melhor" não é
+um critério que eu consiga defender numa discussão técnica — especialmente quando o
+custo por tarefa difere em ordem de magnitude.
+
+Eu queria duas coisas: rodar vários agentes em paralelo sem que um atrapalhasse o
+outro, e comparar modelos nas mesmas tarefas com números em vez de impressões.
+
+## O que construí
+
+- **Um orquestrador local.** Distribui tarefas para diferentes CLIs de agente (OpenCode,
+  Codex, Claude Code) atrás de um adaptador comum, cada um rodando no seu próprio git
+  worktree — a primitiva de isolamento que torna o trabalho paralelo seguro e
+  revisável.
+- **Um harness de benchmark.** Um conjunto de tarefas reais tiradas dos meus próprios
+  repositórios, executadas por cada combinação de modelo/agente, com resultados
+  registrados: conclusão da tarefa, qualidade contra um checklist, custo em tokens e
+  tempo de execução.
+- **GitHub Actions reutilizáveis.** A mesma ideia levada para a CI: um comentário em um
+  pull request como `/oc` ou `/review-oc` dispara uma revisão por agente da mudança,
+  reaproveitada entre repositórios (hoje roda no repositório do planning-poker).
+
+## Decisões e trade-offs
+
+- **Adaptadores, não lock-in.** Cada CLI de agente fica atrás de um adaptador fino, então
+  avaliar uma ferramenta nova é mudança de configuração, não reescrita. O trade-off é
+  lidar com o mínimo denominador comum — mas o harness mede o resto.
+- **Tarefas reais em vez de benchmarks sintéticos.** Meus repositórios têm restrições
+  reais: convenções, testes, processo de review. Um modelo que resolve tarefas de
+  quebra-cabeça mas ignora o `AGENTS.md` não me serve.
+- **Custo é métrica de primeira classe.** Tokens e latência são coletados junto com
+  qualidade, porque a pergunta honesta nunca é "qual modelo é o melhor", mas "qual
+  modelo é bom o suficiente para esta classe de tarefa a este preço".
+- **Manter entediante e scriptável.** Tudo roda na linha de comando e escreve logs
+  estruturados; o harness é ferramenta, não produto.
+
+## Resultados e próximos passos
+
+O orquestrador roda de forma confiável todos os dias, e o harness de benchmark é o que
+eu uso para decidir qual modelo cuida de qual classe de trabalho — refatorações,
+correções pequenas, comentários de review.
+
+Próximos passos:
+
+- Publicar resultados de benchmark periodicamente, com o conjunto de tarefas no
+  repositório.
+- Estender o harness para avaliar qualidade de review, não só conclusão de tarefa.

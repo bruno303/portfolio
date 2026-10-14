@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Next.js
+web/.next/
+web/out/
+web/.vercel/
+next-env.d.ts
+*.tsbuildinfo
+
+# Tests / coverage
+coverage/
+web/coverage/
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Go
+bin/
+api/bin/
+*.test
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+!.vscode.example/
+
+# Logs
+*.log

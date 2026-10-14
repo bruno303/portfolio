@@ -1,0 +1,88 @@
+---
+title: "Planning Poker: estimativa em tempo real como exercício de plataforma"
+summary: "Um app full-stack de planning poker usado como campo de provas do ciclo completo de plataforma: Go + WebSockets, Redis pub/sub para escalar horizontalmente, Helm, GitOps e observabilidade — rodando em produção e staging no homelab."
+role: "Projeto pessoal — ponta a ponta"
+period: "Em andamento"
+stack: ["Go", "WebSockets", "Redis", "Next.js", "Kubernetes", "ArgoCD", "OpenTelemetry"]
+highlights:
+  - value: "3"
+    label: "réplicas servindo produção"
+  - value: "2"
+    label: "ambientes: produção + staging"
+  - value: "1"
+    label: "Helm chart para tudo"
+links:
+  - label: "Repositório"
+    url: "https://github.com/bruno303/planning-poker"
+  - label: "Demo ao vivo"
+    url: "https://planning-poker.bsoapp.net"
+featured: true
+order: 2
+---
+
+## Contexto
+
+Planning poker precisa de uma sala compartilhada, votos simultâneos e revelação
+instantânea — o que é outra forma de dizer: WebSockets, estado compartilhado e uma UI
+que nunca pode ficar desatualizada.
+
+Eu queria mais do que uma demo. Este projeto é o ciclo completo que uso para validar
+decisões de plataforma de ponta a ponta: escrever o serviço, containerizar, publicar
+imagens, fazer deploy com GitOps e observar sob tráfego real antes que qualquer outra
+coisa dependa dele.
+
+## Como funciona
+
+- **Salas com papéis.** Cada sala tem um dono, participantes e espectadores; os votos
+  ficam privados até o dono revelar.
+- **Tempo real por padrão.** A API em Go mantém um WebSocket por cliente. O estado da
+  sala vive em um hub; cada voto e revelação é propagado via Redis pub/sub.
+- **Instâncias stateless.** Nenhuma instância guarda a única cópia de nada. Qualquer
+  réplica pode atender qualquer usuário — é isso que torna o deploy de produção
+  entediante, no bom sentido (três réplicas, sem sticky sessions).
+
+## Decisões e trade-offs
+
+- **Redis pub/sub em vez de broadcast em memória.** Em memória é mais simples e
+  funcionaria com uma réplica, mas fixa um ponto único de falha. O pub/sub custa um hop
+  a mais e compra escala horizontal e rolling restarts que não derrubam salas.
+- **Backend em camadas (domain → application → infra).** As regras da sala são Go puro;
+  WebSocket, Redis e HTTP ficam atrás de fronteiras. Os testes rodam contra a mesma
+  fiação usada em produção, porque o container monta o grafo uma única vez.
+- **A pirâmide de testes se mantém honesta.** Testes unitários ao lado do código;
+  integração sobe o app completo via `httptest` contra um Redis real; Playwright cobre
+  os fluxos críticos — e roda dentro do Docker, então uma lib faltando no host nunca
+  bloqueia a CI.
+- **GitOps com uma aplicação por ambiente.** Staging e produção são aplicações ArgoCD
+  separadas apontando para o mesmo Helm chart com values diferentes. Promover é mudar
+  values, não rodar `kubectl` na mão.
+- **Observabilidade desde o primeiro dia.** Traces vão para o Tempo, métricas são
+  coletadas pelo gateway do OTel Collector e enviadas ao Prometheus, logs vão para o
+  Loki. O interessante não é a stack — é que um app de WebSocket finalmente me fez ligar
+  para métricas por conexão e comportamento de reconexão.
+
+## Arquitetura
+
+<Mermaid chart={`graph LR
+  B[Navegador] -->|HTTPS| F[Next.js frontend]
+  F -->|WebSocket + REST| A[Go API - 3 réplicas]
+  A <-->|pub/sub| R[(Redis)]
+  A -->|OTLP| O[OTel Collector]
+  O --> T[Tempo]
+  O --> P[Prometheus]
+  O --> L[Loki]
+`} caption="Broadcast multi-instância via Redis; observabilidade pelo OTel Collector do homelab." />
+
+## Resultados e próximos passos
+
+O app roda em produção no homelab e é usado por times reais em sessões, com staging
+publicado a partir do mesmo chart para experimentos seguros.
+
+Próximos passos que já acompanho:
+
+- Migrar `active_users` / `active_rooms` de contadores para gauges, para números exatos
+  (é o que a página `/lab` do portfólio lê — veja o ADR 0003 no repositório do
+  portfólio).
+- Melhorar a reconexão quando um notebook dorme no meio da sessão.
+- Publicar um teste de carga mostrando até onde três réplicas aguentam antes de o Redis
+  virar gargalo.
