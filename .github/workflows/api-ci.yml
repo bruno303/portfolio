@@ -41,8 +41,9 @@ jobs:
         run: go test ./... -race -count=1 -coverprofile=coverage.out
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v9
         with:
+          version: v2.6.1
           working-directory: api
 
   publish:
