@@ -20,10 +20,10 @@ order: 1
 
 ## Context
 
-Any managed cloud hides most of the operational loop: you get DNS, TLS, scheduling,
-secrets and observability as line items. At home, every one of those is a decision —
-and that is exactly why it is useful. The goal was not to save money on Netflix
-hosting; it was to own the whole loop, from `kubectl` to restore drills.
+Any managed cloud hides most of the operational loop: DNS, TLS, scheduling, secrets
+and observability arrive as line items. At home, every one of those is a decision —
+which is exactly why it is useful. The goal was to own the whole loop, from `kubectl`
+to restore drills; saving money on hosting was never really the point.
 
 ## What runs there
 
@@ -46,14 +46,14 @@ Delivery is ArgoCD, one application per service, with the cluster's own configur
   single inbound port, and keeps the home IP invisible. TLS terminates at the edge.
 - **Observability as one pipeline.** Applications emit OTLP; a collector gateway fans
   out traces to Tempo, metrics to Prometheus (remote write) and logs to Loki. Node-level
-  scraping stays in Prometheus. One pipeline means one place to debug when telemetry
-  disappears — which is itself an honest failure mode: it happened, and the fix was in
-  the collector's config, not in nine applications.
+  scraping stays in Prometheus. One pipeline means a single place to debug when
+  telemetry disappears — that happened once, and the fix went into the collector's
+  config rather than nine applications.
 - **Backups are code, and code gets tested.** `restic` snapshots go offsite with
   `rclone` on a weekly schedule, driven by a Makefile, with a verifier that checks the
   snapshots. The remaining gaps (etcd snapshots, a full restore drill) are tracked as
-  open items in the repository — public, because an honest TODO list is part of the
-  work, not a weakness.
+  open items in the repository itself, in the open — a half-finished TODO list is just
+  what a working system looks like.
 
 ## Architecture
 

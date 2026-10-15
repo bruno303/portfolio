@@ -22,8 +22,8 @@ order: 2
 
 ## Context
 
-Planning poker needs a shared room, simultaneous votes and instant reveal — which is
-another way of saying: WebSockets, shared state and a UI that never feels stale.
+Planning poker needs a shared room, simultaneous votes and an instant reveal — in
+practice: WebSockets, shared state and a UI that never feels stale.
 
 I wanted more than a demo. This project is the round trip I use to validate platform
 decisions end to end: write the service, containerize it, publish images, deploy with
@@ -36,8 +36,8 @@ GitOps, and then watch it under real traffic before anything else depends on it.
 - **Real-time by default.** The Go API keeps a WebSocket per client. The room state
   lives in a hub; every vote and reveal is broadcast through Redis pub/sub.
 - **Stateless instances.** No instance holds the only copy of anything. Any replica can
-  serve any user, which is what makes the production deployment boring — in the good
-  way (three replicas, no sticky sessions).
+  serve any user, which keeps the production deployment uneventful: three replicas, no
+  sticky sessions.
 
 ## Decisions and trade-offs
 
@@ -54,9 +54,8 @@ GitOps, and then watch it under real traffic before anything else depends on it.
   ArgoCD applications pointing at the same Helm chart with different values. Promotion
   is a values change, not a manual `kubectl`.
 - **Observability from day one.** Traces go to Tempo, metrics are scraped through the
-  OTel Collector gateway into Prometheus, logs go to Loki. The interesting part is not
-  the stack — it is that a WebSocket app finally made me care about per-connection
-  metrics and reconnect behaviour.
+  OTel Collector gateway into Prometheus, logs go to Loki. A WebSocket app is also what
+  finally made me take per-connection metrics and reconnect behaviour seriously.
 
 ## Architecture
 

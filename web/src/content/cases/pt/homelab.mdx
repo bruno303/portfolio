@@ -22,8 +22,9 @@ order: 1
 
 Qualquer cloud gerenciada esconde a maior parte do ciclo operacional: DNS, TLS,
 scheduling, secrets e observabilidade viram itens de fatura. Em casa, cada um desses é
-uma decisão — e é exatamente por isso que vale a pena. O objetivo não era economizar com
-hospedagem; era ser dono do ciclo inteiro, do `kubectl` ao teste de restore.
+uma decisão — e é exatamente por isso que vale a pena. O objetivo era ser dono do
+ciclo inteiro, do `kubectl` ao teste de restore; economizar com hospedagem nunca foi
+o ponto.
 
 ## O que roda lá
 
@@ -46,13 +47,13 @@ cluster aplicada como uma aplicação separada.
 - **Observabilidade como um pipeline só.** As aplicações emitem OTLP; um gateway do
   collector distribui traces para o Tempo, métricas para o Prometheus (remote write) e
   logs para o Loki. Um pipeline significa um único lugar para depurar quando a
-  telemetria some — e isso aconteceu de verdade: o conserto foi na config do collector,
-  não em nove aplicações.
+  telemetria some — isso já aconteceu de verdade, e o conserto virou uma mudança na
+  config do collector, não em nove aplicações.
 - **Backup é código, e código é testado.** Snapshots com `restic` saem da máquina via
   `rclone` semanalmente, guiados por um Makefile, com um verificador que confere os
   snapshots. As lacunas restantes (snapshot de etcd, drill completo de restore) ficam
-  rastreadas no repositório — públicas, porque uma lista de TODO honesta faz parte do
-  trabalho, não é fraqueza.
+  rastreadas como itens abertos no próprio repositório, em público — lista de TODO pela
+  metade é o estado normal de um sistema em uso.
 
 ## Arquitetura
 
