@@ -79,6 +79,7 @@ func TestValidate_CollectsErrors(t *testing.T) {
 
 func TestApplyEnvOverrides(t *testing.T) {
 	t.Setenv("PORT", "9999")
+	t.Setenv("CORS_ALLOWED_ORIGINS", "https://a.test, https://b.test ,")
 	t.Setenv("PROMETHEUS_URL", "http://prom.local:9090")
 	t.Setenv("LOG_LEVEL", "DEBUG")
 
@@ -86,6 +87,7 @@ func TestApplyEnvOverrides(t *testing.T) {
 	applyEnvOverrides(cfg)
 
 	assert.Equal(t, 9999, cfg.Server.Port)
+	assert.Equal(t, []string{"https://a.test", "https://b.test"}, cfg.Server.CORSAllowedOrigins)
 	assert.Equal(t, "http://prom.local:9090", cfg.Prometheus.URL)
 	assert.Equal(t, "DEBUG", cfg.Server.LogLevel)
 }

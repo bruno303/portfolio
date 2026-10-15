@@ -51,6 +51,34 @@ ingress:
           pathType: Prefix
 ```
 
+## 2.1 Environment variables and secrets
+
+No credential or environment-specific URL is baked into the images. Deploy-time
+settings flow through Helm values and env vars:
+
+- **web (Next.js BFF):** `API_BASE_URL` points at the api service, set from values.
+  `web.extraEnv` (a values list) adds any other variable; `web.envFrom`
+  (secretRef/configMapRef) pulls values from a Secret so nothing sensitive sits in
+  git.
+- **api (Go):** the cluster config (`config.yaml`) is rendered from values into a
+  ConfigMap, but these env vars override it at startup, which also keeps local
+  runs easy: `PORT`, `PROMETHEUS_URL`, `LOG_LEVEL` and `CORS_ALLOWED_ORIGINS`
+  (comma-separated). `api.extraEnv` / `api.envFrom` work like the web ones.
+
+Example secret wiring — create the Secret outside the chart, or sync it with the
+External Secrets Operator as done for the other homelab services:
+
+```yaml
+web:
+  envFrom:
+    - secretRef:
+        name: portfolio-secrets
+```
+
+For completeness: the URLs and profile data in `web/src` are public portfolio
+content by design, and a repository audit found no tokens or credentials to move
+out of source.
+
 ## 3. ArgoCD application
 
 Add `self_hosted/k8s/argo/apps/portfolio.yaml` to the `study-topics` repo following the

@@ -30,6 +30,13 @@ spec:
             - containerPort: {{ .Values.web.port }}
           env:
             {{- toYaml .Values.web.env | nindent 12 }}
+            {{- with .Values.web.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.web.envFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           livenessProbe:
             httpGet:
               path: {{ .Values.web.probes.path }}

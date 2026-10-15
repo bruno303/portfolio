@@ -14,6 +14,11 @@ web:
     # Must match the api Service below (<fullnameOverride>-api).
     - name: API_BASE_URL
       value: "http://portfolio-api:8080"
+  # Extra env vars merged at deploy time (per-environment settings, urls, etc.).
+  extraEnv: []
+  # envFrom entries (secretRef, configMapRef) for values managed in the cluster
+  # and kept out of git.
+  envFrom: []
   probes:
     path: /
     port: 3000
@@ -41,6 +46,12 @@ api:
   replicas: 1
   port: 8080
   logLevel: INFO
+  # Extra env vars merged at deploy time; they override the rendered ConfigMap
+  # (PORT, PROMETHEUS_URL, LOG_LEVEL, CORS_ALLOWED_ORIGINS).
+  extraEnv: []
+  # envFrom entries (secretRef, configMapRef) for values managed in the cluster
+  # and kept out of git.
+  envFrom: []
   imagePullSecrets: []
   probes:
     path: /healthz

@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -82,7 +83,8 @@ func (d *Duration) UnmarshalYAML(value *yaml.Node) error {
 }
 
 // Load resolves the config path (CONFIG_PATH or config/config.yaml), reads the
-// file and applies environment overrides: PORT, PROMETHEUS_URL, LOG_LEVEL.
+// file and applies environment overrides: PORT, CORS_ALLOWED_ORIGINS,
+// PROMETHEUS_URL, LOG_LEVEL.
 func Load() (*Config, error) {
 	path := os.Getenv("CONFIG_PATH")
 	if path == "" {
@@ -125,6 +127,10 @@ func applyEnvOverrides(cfg *Config) {
 		}
 	}
 
+	if raw := os.Getenv("CORS_ALLOWED_ORIGINS"); raw != "" {
+		cfg.Server.CORSAllowedOrigins = splitAndTrim(raw)
+	}
+
 	if raw := os.Getenv("PROMETHEUS_URL"); raw != "" {
 		cfg.Prometheus.URL = raw
 	}
@@ -132,6 +138,21 @@ func applyEnvOverrides(cfg *Config) {
 	if raw := os.Getenv("LOG_LEVEL"); raw != "" {
 		cfg.Server.LogLevel = raw
 	}
+}
+
+// splitAndTrim parses a comma-separated environment value such as
+// CORS_ALLOWED_ORIGINS, dropping surrounding whitespace and empty entries.
+func splitAndTrim(raw string) []string {
+	parts := strings.Split(raw, ",")
+	origins := make([]string, 0, len(parts))
+
+	for _, part := range parts {
+		if trimmed := strings.TrimSpace(part); trimmed != "" {
+			origins = append(origins, trimmed)
+		}
+	}
+
+	return origins
 }
 
 func (c *Config) validate() error {
