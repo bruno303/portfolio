@@ -14,7 +14,7 @@ import (
 
 // NewRouter builds the application graph and returns the HTTP handler.
 func NewRouter(cfg *config.Config, logger *slog.Logger) http.Handler {
-	queryTimeout := time.Duration(cfg.Prometheus.QueryTimeout)
+	queryTimeout := cfg.Prometheus.QueryTimeout
 
 	provider := prometheus.New(cfg.Prometheus.URL, queryTimeout, logger)
 	useCase := application.NewUseCase(provider, cfg)

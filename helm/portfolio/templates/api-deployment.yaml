@@ -29,8 +29,26 @@ spec:
           ports:
             - containerPort: {{ .Values.api.port }}
           env:
+            - name: PORT
+              value: {{ .Values.api.port | quote }}
             - name: LOG_LEVEL
               value: {{ .Values.api.logLevel | quote }}
+            - name: PROMETHEUS_URL
+              value: {{ .Values.api.prometheus.url | quote }}
+            - name: PROMETHEUS_QUERY_TIMEOUT
+              value: {{ .Values.api.prometheus.queryTimeout | quote }}
+            - name: PROMETHEUS_CACHE_TTL
+              value: {{ .Values.api.prometheus.cacheTTL | quote }}
+            - name: CORS_ALLOWED_ORIGINS
+              value: {{ join "," .Values.api.corsAllowedOrigins | quote }}
+            {{- with .Values.api.services }}
+            - name: SERVICES
+              value: {{ toJson . | quote }}
+            {{- end }}
+            {{- with .Values.api.customMetrics }}
+            - name: CUSTOM_METRICS
+              value: {{ toJson . | quote }}
+            {{- end }}
             {{- with .Values.api.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -38,10 +56,6 @@ spec:
           envFrom:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          volumeMounts:
-            - name: config
-              mountPath: /config
-              readOnly: true
           livenessProbe:
             httpGet:
               path: {{ .Values.api.probes.path }}
@@ -57,10 +71,6 @@ spec:
             periodSeconds: 10
           resources:
             {{- toYaml .Values.api.resources | nindent 12 }}
-      volumes:
-        - name: config
-          configMap:
-            name: {{ include "portfolio.fullname" . }}-api-config
       {{- with .Values.api.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

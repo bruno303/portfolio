@@ -16,12 +16,23 @@ endpoints return `502` only when every query fails (Prometheus unreachable).
 
 ## Configuration
 
-`config/config.yaml` (path overridable via `CONFIG_PATH`) defines the curated
-scope: which services are aggregated and which PromQL queries are exposed. Only
-configuration values are ever interpolated into PromQL — requests never carry
-queries.
+The curated scope is compiled into the binary
+(`api/config/config.yaml`, loaded from an embedded baseline): which services
+are aggregated and which PromQL queries are exposed. Only configuration values
+are ever interpolated into PromQL — requests never carry queries.
 
-Environment overrides: `PORT`, `PROMETHEUS_URL`, `LOG_LEVEL`, `CONFIG_PATH`.
+Every setting can be replaced by an environment variable:
+
+| Env var | Replaces | Values |
+|---|---|---|
+| `PORT` | `server.port` | integer |
+| `LOG_LEVEL` | `server.log_level` | `INFO`, `DEBUG`, `WARN`, `ERROR` |
+| `CORS_ALLOWED_ORIGINS` | `server.cors_allowed_origins` | comma-separated origins |
+| `PROMETHEUS_URL` | `prometheus.url` | URL |
+| `PROMETHEUS_QUERY_TIMEOUT` | `prometheus.query_timeout` | duration (`5s`) |
+| `PROMETHEUS_CACHE_TTL` | `prometheus.cache_ttl` | duration (`15s`) |
+| `SERVICES` | `services` | JSON array of `{id, name, namespace, pod_regex}` |
+| `CUSTOM_METRICS` | `custom_metrics` | JSON array of `{id, label, unit, query}` |
 
 ## Development
 

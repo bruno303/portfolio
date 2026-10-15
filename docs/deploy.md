@@ -60,10 +60,12 @@ settings flow through Helm values and env vars:
   `web.extraEnv` (a values list) adds any other variable; `web.envFrom`
   (secretRef/configMapRef) pulls values from a Secret so nothing sensitive sits in
   git.
-- **api (Go):** the cluster config (`config.yaml`) is rendered from values into a
-  ConfigMap, but these env vars override it at startup, which also keeps local
-  runs easy: `PORT`, `PROMETHEUS_URL`, `LOG_LEVEL` and `CORS_ALLOWED_ORIGINS`
-  (comma-separated). `api.extraEnv` / `api.envFrom` work like the web ones.
+- **api (Go):** the config baseline is compiled into the image
+  (`api/config/config.yaml`); Helm values are rendered directly into env vars
+  (`PORT`, `PROMETHEUS_URL`, `LOG_LEVEL`, `CORS_ALLOWED_ORIGINS`,
+  `PROMETHEUS_QUERY_TIMEOUT`, `PROMETHEUS_CACHE_TTL`, `SERVICES`,
+  `CUSTOM_METRICS`), so no ConfigMap is involved. `api.extraEnv` /
+  `api.envFrom` work like the web ones.
 
 Example secret wiring — create the Secret outside the chart, or sync it with the
 External Secrets Operator as done for the other homelab services:

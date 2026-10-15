@@ -1,7 +1,8 @@
-# Default configuration, aimed at local development.
+# Baseline configuration, aimed at local development.
 #
-# Production overrides live in values-prod.yaml (Helm) and are rendered into a
-# ConfigMap. Keep the curated scope small: see docs/adr/0003-live-metrics-scope.md.
+# This file is embedded into the binary (see embed.go). Deployments replace
+# any value through environment variables (see api/README.md); the curated
+# scope stays small: docs/adr/0003-live-metrics-scope.md.
 
 server:
   port: 8080

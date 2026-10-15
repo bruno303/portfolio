@@ -46,8 +46,8 @@ api:
   replicas: 1
   port: 8080
   logLevel: INFO
-  # Extra env vars merged at deploy time; they override the rendered ConfigMap
-  # (PORT, PROMETHEUS_URL, LOG_LEVEL, CORS_ALLOWED_ORIGINS).
+  # Extra env vars merged at deploy time; they override the rendered env vars
+  # above (PORT, PROMETHEUS_URL, LOG_LEVEL, CORS_ALLOWED_ORIGINS, ...).
   extraEnv: []
   # envFrom entries (secretRef, configMapRef) for values managed in the cluster
   # and kept out of git.

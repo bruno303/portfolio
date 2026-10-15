@@ -31,7 +31,9 @@ Run from the repository root.
 ### Run
 
 - `make web` - Next.js dev server on :3000.
-- `make api` - API on :8080. Live data needs `PROMETHEUS_URL` (env overrides the config file).
+- `make api` - API on :8080. Live data needs `PROMETHEUS_URL` (env vars replace
+  any config value; the YAML in `api/config/config.yaml` is the baked-in
+  baseline).
 
 ### Build and quality
 

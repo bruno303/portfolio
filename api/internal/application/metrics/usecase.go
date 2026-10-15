@@ -38,7 +38,7 @@ func NewUseCase(provider metrics.Provider, cfg *config.Config) *UseCase {
 		provider: provider,
 		services: cfg.Services,
 		custom:   cfg.CustomMetrics,
-		ttl:      time.Duration(cfg.Prometheus.CacheTTL),
+		ttl:      cfg.Prometheus.CacheTTL,
 	}
 }
 

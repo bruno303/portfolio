@@ -1,102 +1,157 @@
-// Package config loads and validates the YAML configuration, applying the
-// environment overrides used by containers.
+// Package config loads the API configuration: an embedded YAML baseline with
+// environment variable overrides on top (github.com/sethvargo/go-envconfig,
+// driven by `env` tags).
 package config
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
-	"os"
-	"strconv"
-	"strings"
 	"time"
 
-	"gopkg.in/yaml.v3"
+	tkconfig "github.com/bruno303/go-toolkit/pkg/config"
+	configfs "github.com/bruno303/portfolio/api/config"
 )
 
 const (
 	defaultPort         = 8080
 	defaultQueryTimeout = 5 * time.Second
 	defaultCacheTTL     = 15 * time.Second
-	defaultConfigPath   = "config/config.yaml"
 	defaultLogLevel     = "INFO"
 )
 
 // Config is the root configuration document.
 type Config struct {
-	Server        Server         `yaml:"server"`
-	Prometheus    Prometheus     `yaml:"prometheus"`
-	Services      []Service      `yaml:"services"`
-	CustomMetrics []CustomMetric `yaml:"custom_metrics"`
+	Server        Server        `yaml:"server"`
+	Prometheus    Prometheus    `yaml:"prometheus"`
+	Services      Services      `yaml:"services" env:"SERVICES"`
+	CustomMetrics CustomMetrics `yaml:"custom_metrics" env:"CUSTOM_METRICS"`
 }
 
 // Server holds HTTP boundary settings.
+//
+// Environment: PORT, LOG_LEVEL, CORS_ALLOWED_ORIGINS (comma-separated).
 type Server struct {
-	Port               int      `yaml:"port"`
-	CORSAllowedOrigins []string `yaml:"cors_allowed_origins"`
-	LogLevel           string   `yaml:"log_level"`
+	Port               int      `yaml:"port" env:"PORT"`
+	CORSAllowedOrigins []string `yaml:"cors_allowed_origins" env:"CORS_ALLOWED_ORIGINS"`
+	LogLevel           string   `yaml:"log_level" env:"LOG_LEVEL"`
 }
 
 // Prometheus holds connection and caching settings for the metrics provider.
+//
+// Environment: PROMETHEUS_URL, PROMETHEUS_QUERY_TIMEOUT, PROMETHEUS_CACHE_TTL.
 type Prometheus struct {
-	URL          string   `yaml:"url"`
-	QueryTimeout Duration `yaml:"query_timeout"`
-	CacheTTL     Duration `yaml:"cache_ttl"`
+	URL          string        `yaml:"url" env:"PROMETHEUS_URL"`
+	QueryTimeout time.Duration `yaml:"query_timeout" env:"PROMETHEUS_QUERY_TIMEOUT"`
+	CacheTTL     time.Duration `yaml:"cache_ttl" env:"PROMETHEUS_CACHE_TTL"`
 }
 
 // Service describes one deployment whose CPU and memory are published.
 // Selection is intentionally coarse (namespace + pod name regex) so no pod or
 // node identity ever reaches the payload.
 type Service struct {
-	ID        string `yaml:"id"`
-	Name      string `yaml:"name"`
-	Namespace string `yaml:"namespace"`
-	PodRegex  string `yaml:"pod_regex"`
+	ID        string `yaml:"id" json:"id"`
+	Name      string `yaml:"name" json:"name"`
+	Namespace string `yaml:"namespace" json:"namespace"`
+	PodRegex  string `yaml:"pod_regex" json:"pod_regex"`
 }
 
-// CustomMetric is a curated PromQL query rendered as a single value.
-type CustomMetric struct {
-	ID    string `yaml:"id"`
-	Label string `yaml:"label"`
-	Unit  string `yaml:"unit"`
-	Query string `yaml:"query"`
-}
+// UnmarshalJSON accepts the YAML spelling (pod_regex) and the Helm values
+// spelling (podRegex) so JSON rendered from values files decodes either way.
+func (s *Service) UnmarshalJSON(data []byte) error {
+	var raw struct {
+		ID            string `json:"id"`
+		Name          string `json:"name"`
+		Namespace     string `json:"namespace"`
+		PodRegex      string `json:"pod_regex"`
+		PodRegexCamel string `json:"podRegex"`
+	}
 
-// Duration parses Go duration strings such as "5s" or "1m" from YAML.
-type Duration time.Duration
-
-// UnmarshalYAML implements yaml.Unmarshaler.
-func (d *Duration) UnmarshalYAML(value *yaml.Node) error {
-	var raw string
-	if err := value.Decode(&raw); err != nil {
+	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
 	}
 
-	parsed, err := time.ParseDuration(raw)
-	if err != nil {
-		return fmt.Errorf("invalid duration %q: %w", raw, err)
+	regex := raw.PodRegex
+	if regex == "" {
+		regex = raw.PodRegexCamel
 	}
 
-	*d = Duration(parsed)
+	*s = Service{ID: raw.ID, Name: raw.Name, Namespace: raw.Namespace, PodRegex: regex}
 
 	return nil
 }
 
-// Load resolves the config path (CONFIG_PATH or config/config.yaml), reads the
-// file and applies environment overrides: PORT, CORS_ALLOWED_ORIGINS,
-// PROMETHEUS_URL, LOG_LEVEL.
-func Load() (*Config, error) {
-	path := os.Getenv("CONFIG_PATH")
-	if path == "" {
-		path = defaultConfigPath
+// CustomMetric is a curated PromQL query rendered as a single value.
+type CustomMetric struct {
+	ID    string `yaml:"id" json:"id"`
+	Label string `yaml:"label" json:"label"`
+	Unit  string `yaml:"unit" json:"unit"`
+	Query string `yaml:"query" json:"query"`
+}
+
+// Services is the curated list of aggregated deployments. As a named slice it
+// can be replaced entirely by the (JSON array) SERVICES env var.
+type Services []Service
+
+// EnvDecode implements envconfig.DecoderCtx so the raw env value is decoded as
+// a single JSON array instead of being comma-split per item.
+func (s *Services) EnvDecode(_ context.Context, val string) error {
+	if val == "" {
+		return nil
 	}
 
-	cfg, err := loadFrom(path)
+	parsed, err := decodeJSONList[Service](val)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	applyEnvOverrides(cfg)
+	*s = parsed
+
+	return nil
+}
+
+// CustomMetrics is the curated list of PromQL queries exposed as samples.
+type CustomMetrics []CustomMetric
+
+// EnvDecode implements envconfig.DecoderCtx so the raw env value is decoded as
+// a single JSON array instead of being comma-split per item.
+func (c *CustomMetrics) EnvDecode(_ context.Context, val string) error {
+	if val == "" {
+		return nil
+	}
+
+	parsed, err := decodeJSONList[CustomMetric](val)
+	if err != nil {
+		return err
+	}
+
+	*c = parsed
+
+	return nil
+}
+
+// decodeJSONList parses the JSON form of a list, decoding into a fresh slice
+// so YAML-parsed values can never leak into partially replaced items.
+func decodeJSONList[T any](val string) ([]T, error) {
+	var parsed []T
+
+	if err := json.Unmarshal([]byte(val), &parsed); err != nil {
+		return nil, fmt.Errorf("decode JSON list: %w", err)
+	}
+
+	return parsed, nil
+}
+
+// Load builds the configuration from the embedded YAML baseline plus env var
+// overrides, then validates it. Load errors already before validation are
+// mapped onto the error return the same way.
+func Load() (*Config, error) {
+	cfg, err := load()
+	if err != nil {
+		return nil, fmt.Errorf("load config: %w", err)
+	}
 
 	if err := cfg.validate(); err != nil {
 		return nil, fmt.Errorf("invalid config: %w", err)
@@ -105,54 +160,20 @@ func Load() (*Config, error) {
 	return cfg, nil
 }
 
-func loadFrom(path string) (*Config, error) {
-	contents, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("read config %s: %w", path, err)
-	}
+// load invokes the toolkit config loader, which panics on I/O, parse and env
+// processing errors; the panic is bridged to the error contract of this
+// package so callers fail fast with a plain error.
+func load() (loaded *Config, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%v", r)
+		}
+	}()
 
 	var cfg Config
-
-	if err := yaml.Unmarshal(contents, &cfg); err != nil {
-		return nil, fmt.Errorf("parse config %s: %w", path, err)
-	}
+	tkconfig.LoadConfig(&cfg, configfs.Files)
 
 	return &cfg, nil
-}
-
-func applyEnvOverrides(cfg *Config) {
-	if raw := os.Getenv("PORT"); raw != "" {
-		if port, err := strconv.Atoi(raw); err == nil {
-			cfg.Server.Port = port
-		}
-	}
-
-	if raw := os.Getenv("CORS_ALLOWED_ORIGINS"); raw != "" {
-		cfg.Server.CORSAllowedOrigins = splitAndTrim(raw)
-	}
-
-	if raw := os.Getenv("PROMETHEUS_URL"); raw != "" {
-		cfg.Prometheus.URL = raw
-	}
-
-	if raw := os.Getenv("LOG_LEVEL"); raw != "" {
-		cfg.Server.LogLevel = raw
-	}
-}
-
-// splitAndTrim parses a comma-separated environment value such as
-// CORS_ALLOWED_ORIGINS, dropping surrounding whitespace and empty entries.
-func splitAndTrim(raw string) []string {
-	parts := strings.Split(raw, ",")
-	origins := make([]string, 0, len(parts))
-
-	for _, part := range parts {
-		if trimmed := strings.TrimSpace(part); trimmed != "" {
-			origins = append(origins, trimmed)
-		}
-	}
-
-	return origins
 }
 
 func (c *Config) validate() error {
@@ -179,11 +200,11 @@ func (c *Config) validate() error {
 	}
 
 	if c.Prometheus.QueryTimeout <= 0 {
-		c.Prometheus.QueryTimeout = Duration(defaultQueryTimeout)
+		c.Prometheus.QueryTimeout = defaultQueryTimeout
 	}
 
 	if c.Prometheus.CacheTTL <= 0 {
-		c.Prometheus.CacheTTL = Duration(defaultCacheTTL)
+		c.Prometheus.CacheTTL = defaultCacheTTL
 	}
 
 	seen := make(map[string]struct{}, len(c.Services))

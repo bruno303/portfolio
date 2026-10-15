@@ -20,9 +20,6 @@ FROM gcr.io/distroless/static-debian12:nonroot
 WORKDIR /
 
 COPY --from=build /out/api /api
-COPY config/config.yaml /config/config.yaml
-
-ENV CONFIG_PATH=/config/config.yaml
 
 EXPOSE 8080
 

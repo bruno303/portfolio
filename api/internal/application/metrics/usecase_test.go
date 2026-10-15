@@ -33,7 +33,7 @@ func (f *fakeProvider) Query(_ context.Context, queries []domainmetrics.Query) (
 
 func newTestConfig(ttl time.Duration) *config.Config {
 	return &config.Config{
-		Prometheus: config.Prometheus{CacheTTL: config.Duration(ttl)},
+		Prometheus: config.Prometheus{CacheTTL: ttl},
 		Services: []config.Service{
 			{ID: "api", Name: "API", Namespace: "production", PodRegex: "api-.*"},
 		},
