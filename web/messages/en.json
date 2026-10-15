@@ -29,8 +29,7 @@
     "stats": {
       "years": { "value": "12+", "label": "years in software" },
       "languages": { "value": "Go · Kotlin", "label": "primary languages" },
-      "platform": { "value": "k3s + ArgoCD", "label": "the platform I run at home" },
-      "reach": { "value": "Remote-first", "label": "teams across time zones" }
+      "platform": { "value": "k3s + ArgoCD", "label": "the platform I run at home" }
     },
     "cases": {
       "title": "Case studies",
@@ -57,7 +56,7 @@
     },
     "contact": {
       "title": "Let's talk",
-      "description": "I am open to senior backend and platform roles with remote-first teams.",
+      "description": "I am open to senior backend and platform roles.",
       "github": "GitHub",
       "linkedin": "LinkedIn",
       "cv": "View CV"

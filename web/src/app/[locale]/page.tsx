@@ -26,7 +26,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     { value: t('stats.years.value'), label: t('stats.years.label') },
     { value: t('stats.languages.value'), label: t('stats.languages.label') },
     { value: t('stats.platform.value'), label: t('stats.platform.label') },
-    { value: t('stats.reach.value'), label: t('stats.reach.label') },
   ];
 
   return (
@@ -71,7 +70,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             </a>
           </div>
 
-          <dl className="mt-14 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4">
+          <dl className="mt-14 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3">
             {stats.map((stat) => (
               <div key={stat.label}>
                 <dt className="font-mono text-xs text-zinc-500 dark:text-zinc-400">{stat.label}</dt>

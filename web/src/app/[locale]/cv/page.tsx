@@ -45,7 +45,7 @@ export default async function CvPage({ params }: { params: Promise<{ locale: str
             Senior Software Engineer · Backend &amp; Platform
           </p>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Bauru, São Paulo, Brazil · Remote-first
+            Bauru, São Paulo, Brazil
           </p>
           <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs">
             <a href={site.github} target="_blank" rel="noreferrer" className="hover:underline">

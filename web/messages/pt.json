@@ -29,8 +29,7 @@
     "stats": {
       "years": { "value": "12+", "label": "anos em software" },
       "languages": { "value": "Go · Kotlin", "label": "linguagens principais" },
-      "platform": { "value": "k3s + ArgoCD", "label": "a plataforma que rodo em casa" },
-      "reach": { "value": "Remoto", "label": "times em vários fusos" }
+      "platform": { "value": "k3s + ArgoCD", "label": "a plataforma que rodo em casa" }
     },
     "cases": {
       "title": "Cases",
@@ -57,7 +56,7 @@
     },
     "contact": {
       "title": "Vamos conversar",
-      "description": "Estou aberto a posições sênior de backend e plataforma em times remote-first.",
+      "description": "Estou aberto a posições sênior de backend e plataforma.",
       "github": "GitHub",
       "linkedin": "LinkedIn",
       "cv": "Ver CV"
