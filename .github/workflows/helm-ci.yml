@@ -26,3 +26,6 @@ jobs:
 
       - name: Render
         run: helm template portfolio helm/portfolio > /dev/null
+
+      - name: Render production values
+        run: helm template portfolio helm/portfolio -f helm/portfolio/values-prod.yaml > /dev/null

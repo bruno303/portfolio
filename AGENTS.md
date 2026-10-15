@@ -86,7 +86,9 @@ Run from the repository root.
   `web/**` or `api/**`.
 - ArgoCD (configured in `bruno303/study-topics`) syncs `helm/portfolio`; step-by-step in
   `docs/deploy.md`.
-- Image bumps are one-line changes in the production values file.
+- Deploys track `:latest`; publish a new image and roll it out with
+  `kubectl -n portfolio rollout restart deploy/portfolio-web deploy/portfolio-api`.
+  Pinning a sha tag in `values-prod.yaml` is the rollback path.
 
 ## Working Style for Agents
 

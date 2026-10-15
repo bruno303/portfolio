@@ -11,44 +11,19 @@ push to `main`:
 - `ghcr.io/bruno303/portfolio-web:<sha>` and `:latest`
 - `ghcr.io/bruno303/portfolio-api:<sha>` and `:latest`
 
-The GHCR packages are private by default; either flip them to public once, or add an
-image pull secret to the namespace.
+The GHCR packages are public; no image pull secret is needed.
 
 ## 2. Helm values for the homelab
 
-Add a production values file to this repo at `helm/portfolio/values-prod.yaml`:
+`helm/portfolio/values-prod.yaml` is checked in and is the source of truth for the
+homelab. It tracks `latest` images with `pullPolicy: Always`, enables the Traefik
+ingress for `portfolio.bsoapp.net`, and relies on the chart defaults for
+`API_BASE_URL`, the Prometheus URL, the curated services and CORS.
 
-```yaml
-web:
-  image:
-    tag: "<sha-or-latest>"
-  env:
-    API_BASE_URL: "http://portfolio-api:8080"
+Images track `latest`, so a new image is rolled out with a restart:
 
-api:
-  image:
-    tag: "<sha-or-latest>"
-  prometheus:
-    url: "http://prometheus-server.monitoring.svc.cluster.local"
-  services:
-    - id: planning-poker-api
-      name: "Planning Poker API"
-      namespace: production
-      podRegex: "planning-poker-backend.*"
-    - id: planning-poker-web
-      name: "Planning Poker Web"
-      namespace: production
-      podRegex: "planning-poker-frontend.*"
-
-ingress:
-  enabled: true
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web
-  hosts:
-    - host: portfolio.bsoapp.net
-      paths:
-        - path: /
-          pathType: Prefix
+```bash
+kubectl -n portfolio rollout restart deploy/portfolio-web deploy/portfolio-api
 ```
 
 ## 2.1 Environment variables and secrets
@@ -116,25 +91,26 @@ spec:
 The alternative used by planning-poker is to render manifests
 (`helm template portfolio helm/portfolio -f values-prod.yaml`) into
 `self_hosted/k8s/portfolio/` and point ArgoCD at those files. Chart-direct is preferred
-here so image bumps are a one-line values change.
+here so the chart stays the single source of truth for the deploy.
+
+The Application cannot render until `helm/portfolio/values-prod.yaml` exists on `main`,
+so push the portfolio changes first.
 
 ## 4. Cloudflare Tunnel + DNS
 
-In the cloudflared configuration, add a public hostname:
-
-```yaml
-- hostname: portfolio.bsoapp.net
-  service: http://traefik.kube-system.svc.cluster.local:80
-```
-
-and create the matching `CNAME` in Cloudflare DNS. TLS is terminated by Cloudflare, the
-same as the other services (`planning-poker.bsoapp.net`, `chat.bsoapp.net`).
+The tunnel is token-managed and already forwards `bsoapp.net` hostnames to Traefik, and
+DNS already covers the domain, with TLS terminated by Cloudflare as for the other
+services (`planning-poker.bsoapp.net`, `chat.bsoapp.net`). No per-service Cloudflare
+change is required; the chart's Traefik ingress (`web` entrypoint) routes the host to
+the web Service.
 
 ## 5. Verify
 
 ```bash
 kubectl -n portfolio get pods
+kubectl -n portfolio get ingress
 kubectl -n portfolio port-forward svc/portfolio-web 3000:3000
 curl -s http://portfolio-api:8080/healthz   # from inside the cluster
 curl -s https://portfolio.bsoapp.net/api/live/services | jq
+curl -s https://portfolio.bsoapp.net/api/live/metrics | jq
 ```

@@ -1,0 +1,24 @@
+# Production values for the homelab (ArgoCD Application `portfolio`).
+# Images track :latest; a values-only change does not roll out by itself, so
+# after a new image is published run:
+#   kubectl -n portfolio rollout restart deploy/portfolio-web deploy/portfolio-api
+web:
+  image:
+    tag: "latest"
+    pullPolicy: Always
+
+api:
+  image:
+    tag: "latest"
+    pullPolicy: Always
+
+ingress:
+  enabled: true
+  className: traefik
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+  hosts:
+    - host: portfolio.bsoapp.net
+      paths:
+        - path: /
+          pathType: Prefix

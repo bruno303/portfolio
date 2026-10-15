@@ -32,11 +32,11 @@ custom_metrics:
   - id: active_rooms
     label: "Active rooms"
     unit: count
-    query: 'sum(planning_poker_active_rooms_total)'
+    query: 'sum(planning_poker_active_rooms_total or planning_poker_active_rooms)'
   - id: active_users
     label: "Active users"
     unit: count
-    query: 'sum(planning_poker_active_users_total)'
+    query: 'sum(planning_poker_active_users_total or planning_poker_active_users)'
   - id: users_total
     label: "Users that joined a room"
     unit: count
