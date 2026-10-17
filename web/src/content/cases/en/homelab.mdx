@@ -9,8 +9,8 @@ highlights:
     label: "services deployed via GitOps"
   - value: "0"
     label: "ports exposed to the internet"
-  - value: "weekly"
-    label: "offsite backups, restic + rclone"
+  - value: "daily"
+    label: "backups to an external drive, restic + rclone"
 links:
   - label: "Infra as code"
     url: "https://github.com/bruno303/study-topics/tree/main/self_hosted"
@@ -28,9 +28,10 @@ to restore drills; saving money on hosting was never really the point.
 ## What runs there
 
 A k3s cluster running services that matter to me: [Gitea](https://gitea.com) with CI
-runners, Vaultwarden, Immich, Jellyfin, Memos, n8n, ntfy, Open WebUI, PDFding and the
+runners, Vaultwarden, Immich, Jellyfin, Memos, ntfy, Open WebUI, PDFding and the
 homepage dashboard — plus the observability stack itself: OpenTelemetry Collector,
-Prometheus, Loki, Tempo and Grafana.
+Prometheus, Loki, Tempo and Grafana. The services were deployed at different times,
+and not all of them are always running.
 
 Delivery is ArgoCD, one application per service, with the cluster's own configuration
 (GitOps settings, namespaces, repository config) applied as its own application.
@@ -49,9 +50,10 @@ Delivery is ArgoCD, one application per service, with the cluster's own configur
   scraping stays in Prometheus. One pipeline means a single place to debug when
   telemetry disappears — that happened once, and the fix went into the collector's
   config rather than nine applications.
-- **Backups are code, and code gets tested.** `restic` snapshots go offsite with
-  `rclone` on a weekly schedule, driven by a Makefile, with a verifier that checks the
-  snapshots. The remaining gaps (etcd snapshots, a full restore drill) are tracked as
+- **Backups are code, and code gets tested.** `restic` snapshots are copied to an
+  external drive with `rclone` every day at 03:00 BRT, driven by a Makefile, with a
+  verifier that checks the snapshots. The remaining gaps (etcd snapshots, a full
+  restore drill) are tracked as
   open items in the repository itself, in the open — a half-finished TODO list is just
   what a working system looks like.
 
@@ -69,8 +71,8 @@ Delivery is ArgoCD, one application per service, with the cluster's own configur
   GR --> PR
   GR --> LO
   S -->|restic| BK[(Backup)]
-  BK -->|rclone| OFF[Offsite]
-`} caption="Public traffic arrives only through the tunnel; telemetry flows through a single OTel pipeline; backups leave the machine." />
+  BK -->|rclone| ED[External drive]
+`} caption="Public traffic arrives only through the tunnel; telemetry flows through a single OTel pipeline; backups land on an external drive." />
 
 ## Results and next steps
 

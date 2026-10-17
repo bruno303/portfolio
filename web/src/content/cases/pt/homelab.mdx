@@ -9,8 +9,8 @@ highlights:
     label: "serviços publicados via GitOps"
   - value: "0"
     label: "portas expostas para a internet"
-  - value: "semanal"
-    label: "backup offsite, restic + rclone"
+  - value: "diário"
+    label: "backup em pendrive externo, restic + rclone"
 links:
   - label: "Infra como código"
     url: "https://github.com/bruno303/study-topics/tree/main/self_hosted"
@@ -29,9 +29,10 @@ o ponto.
 ## O que roda lá
 
 Um cluster k3s com serviços que importam para mim: Gitea com runners de CI, Vaultwarden,
-Immich, Jellyfin, Memos, n8n, ntfy, Open WebUI, PDFding e o dashboard de homepage — além
+Immich, Jellyfin, Memos, ntfy, Open WebUI, PDFding e o dashboard de homepage — além
 da própria stack de observabilidade: OpenTelemetry Collector, Prometheus, Loki, Tempo e
-Grafana.
+Grafana. Os serviços foram implantados em momentos diferentes, e nem todos rodam o
+tempo todo.
 
 A entrega é feita pelo ArgoCD, uma aplicação por serviço, com a configuração do próprio
 cluster aplicada como uma aplicação separada.
@@ -49,9 +50,10 @@ cluster aplicada como uma aplicação separada.
   logs para o Loki. Um pipeline significa um único lugar para depurar quando a
   telemetria some — isso já aconteceu de verdade, e o conserto virou uma mudança na
   config do collector, não em nove aplicações.
-- **Backup é código, e código é testado.** Snapshots com `restic` saem da máquina via
-  `rclone` semanalmente, guiados por um Makefile, com um verificador que confere os
-  snapshots. As lacunas restantes (snapshot de etcd, drill completo de restore) ficam
+- **Backup é código, e código é testado.** Snapshots com `restic` são copiados para um
+  pendrive externo via `rclone` todos os dias às 03:00 (BRT), guiados por um Makefile,
+  com um verificador que confere os snapshots. As lacunas restantes (snapshot de etcd,
+  drill completo de restore) ficam
   rastreadas como itens abertos no próprio repositório, em público — lista de TODO pela
   metade é o estado normal de um sistema em uso.
 
@@ -69,8 +71,8 @@ cluster aplicada como uma aplicação separada.
   GR --> PR
   GR --> LO
   S -->|restic| BK[(Backup)]
-  BK -->|rclone| OFF[Offsite]
-`} caption="Tráfego público chega apenas pelo túnel; telemetria flui por um único pipeline OTel; backups saem da máquina." />
+  BK -->|rclone| PD[Pendrive externo]
+`} caption="Tráfego público chega apenas pelo túnel; telemetria flui por um único pipeline OTel; backups vão para um pendrive externo." />
 
 ## Resultados e próximos passos
 
