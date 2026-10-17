@@ -54,3 +54,8 @@ order: 1
 
 Custom MDX components: `<Callout tone="warning">`, `<StatGrid stats={[...]} />` and
 `<Mermaid chart={`graph LR; A-->B`} caption="..." />`.
+
+Case studies are trusted, in-repo content compiled with JS expressions enabled
+(`blockJS: false` in `src/lib/mdx.ts`), so props like `chart={...}` and
+`stats={[...]}` survive compilation. `blockDangerousJS` stays on, so eval,
+`Function`, `process` and `require` remain blocked.

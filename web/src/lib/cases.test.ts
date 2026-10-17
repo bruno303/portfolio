@@ -1,6 +1,9 @@
+import { compileMDX } from 'next-mdx-remote/rsc';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import { getCase, getCaseSlugs, getCases, getFeaturedCases } from '@/lib/cases';
+import { caseMdxOptions } from '@/lib/mdx';
 
 describe('case loader', () => {
   it('finds all case studies', () => {
@@ -45,5 +48,31 @@ describe('case loader', () => {
 
   it('throws for a missing case', () => {
     expect(() => getCase('en', 'does-not-exist')).toThrow();
+  });
+});
+
+describe('case MDX', () => {
+  it('passes a chart to every Mermaid diagram', async () => {
+    const charts: string[] = [];
+    const Mermaid = ({ chart }: { chart?: string }) => {
+      charts.push(chart ?? '');
+      return null;
+    };
+
+    for (const locale of ['en', 'pt'] as const) {
+      for (const slug of getCaseSlugs()) {
+        const study = getCase(locale, slug);
+        if (!study.content.includes('<Mermaid')) continue;
+        const { content } = await compileMDX({
+          source: study.content,
+          components: { Mermaid },
+          options: caseMdxOptions,
+        });
+        renderToStaticMarkup(content);
+      }
+    }
+
+    expect(charts).toHaveLength(4);
+    expect(charts.every((chart) => chart.startsWith('graph LR'))).toBe(true);
   });
 });
