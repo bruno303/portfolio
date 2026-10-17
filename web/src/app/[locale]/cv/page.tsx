@@ -18,6 +18,7 @@ export async function generateMetadata({
 
   return {
     title: t('summaryTitle'),
+    description: t('description'),
     alternates: {
       canonical: locale === 'en' ? '/cv' : '/pt/cv',
       languages: {
@@ -48,6 +49,9 @@ export default async function CvPage({ params }: { params: Promise<{ locale: str
             Bauru, São Paulo, Brazil
           </p>
           <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs">
+            <a href={`mailto:${site.email}`} className="hover:underline">
+              {site.email}
+            </a>
             <a href={site.github} target="_blank" rel="noreferrer" className="hover:underline">
               github.com/bruno303
             </a>

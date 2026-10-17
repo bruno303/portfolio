@@ -48,6 +48,8 @@ Run from the repository root.
 - Single Go test: `cd api && go test ./internal/application/... -run TestSnapshot`
 - CV PDFs: `cd web && npm run cv:pdf` (dev server running; needs Chromium, or run inside
   the Playwright Docker image).
+- Metadata check: `cd web && npm run verify:metadata` (against a running build; set
+  `VERIFY_BASE_URL` to target another host/port).
 
 ## Web Conventions
 

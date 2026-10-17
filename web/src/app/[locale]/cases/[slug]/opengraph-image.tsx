@@ -11,12 +11,11 @@ export function generateStaticParams() {
   );
 }
 
-export async function alt({ params }: { params: Promise<{ locale: string; slug: string }> }) {
-  const { locale, slug } = await params;
-  const study = getCase(locale as Locale, slug);
-
-  return study.title;
-}
+// Intentional AGENTS.md exception: `og:image:alt` copy lives here rather than in
+// web/messages/*.json because the pinned next@15.5.27 only supports static
+// string `alt` exports (function exports are serialized into the meta tag).
+// EN-only is accepted; keep it a human-readable literal.
+export const alt = 'Bruno Oliveira — case study';
 
 export default async function Image({
   params,

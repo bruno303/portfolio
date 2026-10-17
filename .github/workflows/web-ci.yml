@@ -48,6 +48,11 @@ jobs:
         env:
           NEXT_TELEMETRY_DISABLED: '1'
 
+      - name: Verify metadata
+        run: |
+          npm run start > /tmp/next-start.log 2>&1 &
+          npm run verify:metadata || { cat /tmp/next-start.log; exit 1; }
+
   publish:
     name: Publish image
     needs: [test]

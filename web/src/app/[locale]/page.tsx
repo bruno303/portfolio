@@ -1,4 +1,5 @@
 import { Activity, ArrowRight, GitBranch, Server } from 'lucide-react';
+import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { CaseCard } from '@/components/ui/case-card';
@@ -14,6 +15,19 @@ const platformCards = [
   { key: 'live', Icon: Activity },
   { key: 'open', Icon: Server },
 ] as const;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'meta' });
+
+  return {
+    title: { absolute: t('title') },
+  };
+}
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -156,6 +170,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             </div>
 
             <div className="flex flex-wrap gap-3">
+              <a
+                href={`mailto:${site.email}`}
+                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+              >
+                {t('contact.email')}
+              </a>
               <a
                 href={site.github}
                 target="_blank"
