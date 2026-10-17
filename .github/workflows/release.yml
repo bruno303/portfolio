@@ -1,0 +1,69 @@
+name: release
+
+# Pins the image published by web-ci/api-ci to the merge sha in the production
+# values file. That commit is what changes the rendered pod template, so ArgoCD
+# syncs it and rolls the Deployment out. Pushes made with GITHUB_TOKEN do not
+# retrigger workflows, so the bot commit runs no CI.
+on:
+  workflow_run:
+    workflows: [web-ci, api-ci]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  pin:
+    name: Pin image tag in values-prod.yaml
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Resolve component and sha
+        id: component
+        env:
+          CI_WORKFLOW: ${{ github.event.workflow_run.name }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          set -euo pipefail
+          case "$CI_WORKFLOW" in
+            web-ci) key=web ;;
+            api-ci) key=api ;;
+            *) echo "unexpected workflow: $CI_WORKFLOW" >&2; exit 1 ;;
+          esac
+          echo "key=$key" >> "$GITHUB_OUTPUT"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Pin tag
+        env:
+          KEY: ${{ steps.component.outputs.key }}
+          SHA: ${{ steps.component.outputs.sha }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Recompute the edit on fresh main each attempt and retry: concurrent
+          # web/api releases can race on the push, never on the content.
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            git checkout -B pin origin/main
+            current=$(yq ".${KEY}.image.tag" helm/portfolio/values-prod.yaml)
+            if [ "$current" = "$SHA" ]; then
+              echo "already pinned to $SHA"
+              exit 0
+            fi
+            yq -i ".${KEY}.image.tag = \"${SHA}\"" helm/portfolio/values-prod.yaml
+            git commit -am "chore(deploy): pin ${KEY} image to ${SHA:0:12}"
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "push raced another release, retrying"
+            sleep $((attempt * 5))
+          done
+          echo "could not push the pin after 5 attempts" >&2
+          exit 1

@@ -86,11 +86,11 @@ Run from the repository root.
 
 - CI builds `ghcr.io/bruno303/portfolio-web` and `-api` on pushes to `main` that touch
   `web/**` or `api/**`.
-- ArgoCD (configured in `bruno303/study-topics`) syncs `helm/portfolio`; step-by-step in
-  `docs/deploy.md`.
-- Deploys track `:latest`; publish a new image and roll it out with
-  `kubectl -n portfolio rollout restart deploy/portfolio-web deploy/portfolio-api`.
-  Pinning a sha tag in `values-prod.yaml` is the rollback path.
+- `.github/workflows/release.yml` then pins the new sha into
+  `helm/portfolio/values-prod.yaml`; ArgoCD (configured in `bruno303/study-topics`)
+  syncs that commit and rolls the Deployment out. Step-by-step in `docs/deploy.md`.
+- Rollback by pinning a previous sha tag in `values-prod.yaml` (or reverting the pin
+  commit); pinned images stay in GHCR.
 
 ## Working Style for Agents
 
