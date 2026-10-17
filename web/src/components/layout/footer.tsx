@@ -14,7 +14,13 @@ export async function Footer() {
           © {year} Bruno Oliveira · {t('built')}
         </p>
 
-        <div className="flex items-center gap-4 font-mono text-xs">
+        <div className="flex flex-wrap items-center justify-end gap-4 gap-y-2 font-mono text-xs">
+          <a
+            href={`mailto:${site.email}`}
+            className="transition-colors hover:text-zinc-900 dark:hover:text-zinc-100"
+          >
+            {site.email}
+          </a>
           <a
             href={site.github}
             target="_blank"

@@ -1,6 +1,5 @@
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { Inter, JetBrains_Mono } from 'next/font/google';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
@@ -9,18 +8,7 @@ import { Footer } from '@/components/layout/footer';
 import { Header } from '@/components/layout/header';
 import { ThemeProvider } from '@/components/theme-provider';
 import { routing } from '@/i18n/routing';
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-});
-
-const jetBrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-jetbrains-mono',
-  display: 'swap',
-});
+import { inter, jetBrainsMono } from '@/lib/fonts';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -40,8 +28,6 @@ export async function generateMetadata({
     openGraph: {
       type: 'website',
       siteName: 'Bruno Oliveira',
-      title: t('title'),
-      description: t('description'),
     },
     alternates: {
       canonical: locale === routing.defaultLocale ? '/' : `/${locale}`,

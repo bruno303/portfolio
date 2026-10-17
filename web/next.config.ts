@@ -15,6 +15,13 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(root),
   },
+  experimental: {
+    // Unmatched URLs render app/global-not-found.tsx (with its own <html>/
+    // <body>) instead of Next's built-in 404, so those responses carry a
+    // single intentional <title> instead of the built-in plus root layout
+    // titles. In-segment notFound() calls still use [locale]/not-found.tsx.
+    globalNotFound: true,
+  },
   reactStrictMode: true,
   poweredByHeader: false,
 };

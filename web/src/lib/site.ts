@@ -3,6 +3,7 @@ export const site = {
   repo: 'https://github.com/bruno303/portfolio',
   github: 'https://github.com/bruno303',
   linkedin: 'https://www.linkedin.com/in/bruno-oliveira-516a05113',
+  email: 'brunooliveira812@gmail.com',
   planningPoker: {
     repo: 'https://github.com/bruno303/planning-poker',
     demo: 'https://planning-poker.bsoapp.net',

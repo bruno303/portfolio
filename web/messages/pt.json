@@ -57,6 +57,7 @@
     "contact": {
       "title": "Vamos conversar",
       "description": "Estou aberto a posições sênior de backend e plataforma.",
+      "email": "E-mail",
       "github": "GitHub",
       "linkedin": "LinkedIn",
       "cv": "Ver CV"
@@ -95,6 +96,7 @@
   },
   "cv": {
     "print": "Imprimir / Salvar em PDF",
+    "description": "Engenheiro de backend e plataforma com 12+ anos em software — Go, Kotlin, Kubernetes, GitOps e observabilidade. CV completo com experiência, skills e formação.",
     "summaryTitle": "Resumo",
     "experienceTitle": "Experiência",
     "educationTitle": "Formação",
