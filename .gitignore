@@ -22,6 +22,9 @@ bin/
 api/bin/
 *.test
 
+# Agent workflow artifacts
+.agents/
+
 # Editors / OS
 .DS_Store
 .idea/
