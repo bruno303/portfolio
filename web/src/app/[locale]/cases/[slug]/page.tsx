@@ -2,7 +2,6 @@ import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import remarkGfm from 'remark-gfm';
 
 import { Callout, mdxComponents, StatGrid } from '@/components/mdx';
 import { Container } from '@/components/ui/container';
@@ -10,6 +9,7 @@ import { Tag } from '@/components/ui/tag';
 import { Link } from '@/i18n/navigation';
 import { routing, type Locale } from '@/i18n/routing';
 import { getCase, getCaseSlugs } from '@/lib/cases';
+import { caseMdxOptions } from '@/lib/mdx';
 
 export function generateStaticParams() {
   return getCaseSlugs().flatMap((slug) =>
@@ -116,7 +116,7 @@ export default async function CasePage({
         <MDXRemote
           source={study.content}
           components={mdxComponents}
-          options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+          options={caseMdxOptions}
         />
       </div>
     </Container>
