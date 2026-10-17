@@ -52,8 +52,8 @@ make cv-pdf     # regenerate the CV PDF (requires `npx playwright install chromi
 
 See [docs/deploy.md](docs/deploy.md). Short version: CI builds
 `ghcr.io/bruno303/portfolio-web` and `ghcr.io/bruno303/portfolio-api` on every push to
-`main`; ArgoCD in the homelab syncs `helm/portfolio`; Cloudflare Tunnel publishes
-`portfolio.bsoapp.net`.
+`main` and pins the new sha into `helm/portfolio`; ArgoCD in the homelab syncs that
+change and rolls the Deployments out; Cloudflare Tunnel publishes `portfolio.bsoapp.net`.
 
 ## Roadmap
 

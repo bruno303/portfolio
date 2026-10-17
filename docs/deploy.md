@@ -16,15 +16,21 @@ The GHCR packages are public; no image pull secret is needed.
 ## 2. Helm values for the homelab
 
 `helm/portfolio/values-prod.yaml` is checked in and is the source of truth for the
-homelab. It tracks `latest` images with `pullPolicy: Always`, enables the Traefik
-ingress for `portfolio.bsoapp.net`, and relies on the chart defaults for
+homelab. It pins each image to a commit sha with `pullPolicy: IfNotPresent`, enables the
+Traefik ingress for `portfolio.bsoapp.net`, and relies on the chart defaults for
 `API_BASE_URL`, the Prometheus URL, the curated services and CORS.
 
-Images track `latest`, so a new image is rolled out with a restart:
+The pins are written by `.github/workflows/release.yml`: after `web-ci` or `api-ci`
+publishes an image for a merge to `main`, it commits
+`chore(deploy): pin <web|api> image to <sha>` into `values-prod.yaml`. That commit is
+what changes the rendered pod template, so ArgoCD (30s reconciliation, no webhook picks
+it up) syncs and rolls the Deployment. Pushes made with `GITHUB_TOKEN` do not retrigger
+workflows, so the bot commit runs no CI; a failed release leaves the previous sha in
+place.
 
-```bash
-kubectl -n portfolio rollout restart deploy/portfolio-web deploy/portfolio-api
-```
+Rollback: re-pin a previous sha tag (or `git revert` the pin commit) and ArgoCD rolls
+back; the sha images stay in GHCR. Re-running CI for a sha that is already pinned is not
+picked up (same tag, `IfNotPresent`): land a new commit instead.
 
 ## 2.1 Environment variables and secrets
 
@@ -88,6 +94,9 @@ spec:
       - CreateNamespace=true
 ```
 
+Sha pins are what trigger the rollout, so the Application needs no
+`ignoreDifferences` for `kubectl rollout restart` annotations.
+
 The alternative used by planning-poker is to render manifests
 (`helm template portfolio helm/portfolio -f values-prod.yaml`) into
 `self_hosted/k8s/portfolio/` and point ArgoCD at those files. Chart-direct is preferred
@@ -108,6 +117,9 @@ the web Service.
 
 ```bash
 kubectl -n portfolio get pods
+# image column must show the sha pinned in values-prod.yaml
+kubectl -n portfolio get deploy \
+  -o custom-columns=NAME:.metadata.name,IMAGE:.spec.template.spec.containers[0].image
 kubectl -n portfolio get ingress
 kubectl -n portfolio port-forward svc/portfolio-web 3000:3000
 curl -s http://portfolio-api:8080/healthz   # from inside the cluster

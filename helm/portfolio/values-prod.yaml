@@ -1,17 +1,15 @@
 # Production values for the homelab (ArgoCD Application `portfolio`).
-# Images track :latest; a values-only change does not roll out by itself, so
-# after a new image is published run:
-#   kubectl -n portfolio rollout restart deploy/portfolio-web deploy/portfolio-api
+# Image tags are pinned to commit shas by .github/workflows/release.yml. Do not
+# edit them by hand except for rollback: pin a previous sha tag and ArgoCD rolls
+# back (the sha images stay in GHCR).
 web:
   image:
-    tag: "latest"
-    pullPolicy: Always
-
+    tag: "0f63b315e5fd939fd171433d8487343e28237bca"
+    pullPolicy: IfNotPresent
 api:
   image:
-    tag: "latest"
-    pullPolicy: Always
-
+    tag: "b8e4fee1317a152f1f5605e0400aebd2370ea883"
+    pullPolicy: IfNotPresent
 ingress:
   enabled: true
   className: traefik
