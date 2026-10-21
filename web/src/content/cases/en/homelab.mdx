@@ -1,5 +1,5 @@
 ---
-title: "Homelab: running a platform, not a pile of containers"
+title: "My homelab"
 summary: "A self-hosted k3s cluster managed entirely through GitOps: ArgoCD for delivery, External Secrets for credentials, an OpenTelemetry pipeline feeding Prometheus, Loki and Tempo, restic + rclone backups with a verifier, and zero ports open to the internet."
 role: "Design, operations and on-call"
 period: "Ongoing"
@@ -43,13 +43,13 @@ Delivery is ArgoCD, one application per service, with the cluster's own configur
   and drift is a bug.
 - **Secrets never live in Git.** External Secrets Operator syncs from external secret
   stores per environment, so the repository can stay public-ish and still be safe.
-- **Tunnel in, not ports out.** Cloudflare Tunnel publishes services without opening a
-  single inbound port, and keeps the home IP invisible. TLS terminates at the edge.
+- **No open ports.** Cloudflare Tunnel publishes services without opening a single
+  inbound port, and keeps the home IP invisible. TLS terminates at the edge.
 - **Observability as one pipeline.** Applications emit OTLP; a collector gateway fans
   out traces to Tempo, metrics to Prometheus (remote write) and logs to Loki. Node-level
   scraping stays in Prometheus. One pipeline means a single place to debug when
-  telemetry disappears — that happened once, and the fix went into the collector's
-  config rather than nine applications.
+  telemetry disappears — that happened once, and the fix was a single collector config
+  change.
 - **Backups are code, and code gets tested.** `restic` snapshots are copied to an
   external drive with `rclone` every day at 03:00 BRT, driven by a Makefile, with a
   verifier that checks the snapshots. The remaining gaps (etcd snapshots, a full

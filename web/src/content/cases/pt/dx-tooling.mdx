@@ -37,13 +37,13 @@ Então eu só extraio ferramentas pequenas de repetição que já vivi de verdad
   testar a camada de aplicação com mocks.
 - **GitHub Actions reutilizáveis.** Workflows (como o review por agente e helpers de CI)
   publicados como actions reutilizáveis, para que um repositório novo ganhe o mesmo
-  processo referenciando uma versão — não copiando YAML por aí.
+  processo referenciando uma versão.
 - **Extensões de VS Code.** Duas pequenas, nascidas de incômodos diários com git
   worktrees e sinais de processo, feitas para manter meu próprio ciclo curto.
 
 ## Decisões e trade-offs
 
-- **Regra de três.** Uma ferramenta é extraída na terceira cópia, não na segunda. Isso
+- **Regra de três.** Só extraio uma ferramenta depois da terceira cópia. Isso
   mantém o toolkit pequeno e cada abstração justificada por duplicação real.
 - **Entediante é uma virtude.** Essas ferramentas não têm plugins, evitam arquivos de
   configuração quando possível e expõem poucas opções. Ou funcionam em dez segundos, ou

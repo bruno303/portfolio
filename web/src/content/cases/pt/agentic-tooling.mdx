@@ -1,5 +1,5 @@
 ---
-title: "Ferramentas para desenvolvimento agêntico: comparar modelos, não impressões"
+title: "Ferramentas para desenvolvimento agêntico: benchmark de agentes de código"
 summary: "Uma camada de orquestração que roda múltiplos agentes de código (OpenCode, Codex, Claude Code) em paralelo, cada um em um git worktree isolado, mais um harness de benchmark que compara modelos nas mesmas tarefas reais — qualidade, custo e latência."
 role: "Design e desenvolvimento"
 period: "Em andamento"
@@ -28,7 +28,7 @@ um critério que eu consiga defender numa discussão técnica — especialmente 
 custo por tarefa difere em ordem de magnitude.
 
 Eu queria duas coisas: rodar vários agentes em paralelo sem que um atrapalhasse o
-outro, e comparar modelos nas mesmas tarefas com números em vez de impressões.
+outro, e comparar modelos nas mesmas tarefas com números concretos.
 
 ## O que construí
 
@@ -46,16 +46,16 @@ outro, e comparar modelos nas mesmas tarefas com números em vez de impressões.
 
 ## Decisões e trade-offs
 
-- **Adaptadores, não lock-in.** Cada CLI de agente fica atrás de um adaptador fino, então
-  avaliar uma ferramenta nova é mudança de configuração, não reescrita. O trade-off é
+- **Um adaptador por ferramenta.** Cada CLI de agente fica atrás de um adaptador fino,
+  então avaliar uma ferramenta nova é só mudar a configuração. O trade-off é
   lidar com o mínimo denominador comum — mas o harness mede o resto.
-- **Tarefas reais em vez de benchmarks sintéticos.** Meus repositórios têm restrições
+- **Tarefas dos meus próprios repositórios.** Meus repositórios têm restrições
   reais: convenções, testes, processo de review. Um modelo que resolve tarefas de
   quebra-cabeça mas ignora o `AGENTS.md` não me serve.
 - **Custo é métrica de primeira classe.** Tokens e latência são coletados junto com
   qualidade, porque "melhor" não significa muito sem o preço ao lado.
 - **Manter entediante e scriptável.** Tudo roda na linha de comando e escreve logs
-  estruturados; o harness é ferramenta, não produto.
+  estruturados. O harness continua pequeno de propósito.
 
 ## Resultados e próximos passos
 
@@ -67,4 +67,5 @@ Próximos passos:
 
 - Publicar resultados de benchmark periodicamente, com o conjunto de tarefas no
   repositório.
-- Estender o harness para avaliar qualidade de review, não só conclusão de tarefa.
+- Estender o harness para avaliar também a qualidade do review, além da conclusão da
+  tarefa.

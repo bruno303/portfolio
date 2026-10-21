@@ -1,5 +1,5 @@
 ---
-title: "Agentic development tooling: comparing models, not vibes"
+title: "Agentic development tooling: benchmarking coding agents"
 summary: "An orchestration layer that runs multiple coding agents (OpenCode, Codex, Claude Code) in parallel across isolated git worktrees, plus a benchmark harness that compares models on the same real tasks — quality, cost and latency."
 role: "Design and development"
 period: "Ongoing"
@@ -28,7 +28,7 @@ in a technical discussion — especially when the cost per task differs by an or
 magnitude.
 
 I wanted two things: to run several agents in parallel without them stepping on each
-other, and to compare models on the same tasks with numbers instead of impressions.
+other, and to compare models on the same tasks with actual numbers.
 
 ## What I built
 
@@ -44,16 +44,16 @@ other, and to compare models on the same tasks with numbers instead of impressio
 
 ## Decisions and trade-offs
 
-- **Adapters, not lock-in.** Each agent CLI sits behind a thin adapter, so evaluating a
-  new tool is a configuration change, not a rewrite. The trade-off is dealing with
+- **One adapter per tool.** Each agent CLI sits behind a thin adapter, so trying a new
+  tool is a configuration change. The trade-off is dealing with
   least-common-denominator features — but the harness measures the rest.
-- **Real tasks over synthetic benchmarks.** My repositories have real constraints:
+- **Benchmarks from my own repositories.** My repositories have real constraints:
   conventions, tests, a review process. A model that solves puzzle tasks but ignores
   `AGENTS.md` is not useful to me.
 - **Cost is a first-class metric.** Tokens and latency are collected next to quality,
   because "best" means little without the price tag sitting next to it.
 - **Keep it boring and scriptable.** Everything runs on the command line and writes
-  structured logs; the harness is a tool, not a product.
+  structured logs. The harness stays small on purpose.
 
 ## Results and next steps
 
@@ -64,4 +64,4 @@ comments.
 Next steps:
 
 - Publish benchmark results periodically, with the task suite in the repository.
-- Extend the harness to score review quality, not only task completion.
+- Extend the harness to score review quality as well as task completion.

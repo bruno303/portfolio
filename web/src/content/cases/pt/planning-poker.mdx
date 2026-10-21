@@ -26,10 +26,9 @@ Planning poker precisa de uma sala compartilhada, votos simultâneos e revelaç�
 instantânea — na prática: WebSockets, estado compartilhado e uma UI que nunca parece
 desatualizada.
 
-Eu queria mais do que uma demo. Este projeto é o ciclo completo que uso para validar
-decisões de plataforma de ponta a ponta: escrever o serviço, containerizar, publicar
-imagens, fazer deploy com GitOps e observar sob tráfego real antes que qualquer outra
-coisa dependa dele.
+Este projeto é o ciclo completo que uso para validar decisões de plataforma de ponta a
+ponta: escrever o serviço, containerizar, publicar imagens, fazer deploy com GitOps e
+observar sob tráfego real antes que qualquer outra coisa dependa dele.
 
 ## Como funciona
 
@@ -43,7 +42,7 @@ coisa dependa dele.
 
 ## Decisões e trade-offs
 
-- **Redis pub/sub em vez de broadcast em memória.** Em memória é mais simples e
+- **Redis pub/sub para broadcast.** Em memória é mais simples e
   funcionaria com uma réplica, mas fixa um ponto único de falha. O pub/sub custa um hop
   a mais e compra escala horizontal e rolling restarts que não derrubam salas.
 - **Backend em camadas (domain → application → infra).** As regras da sala são Go puro;
@@ -54,8 +53,8 @@ coisa dependa dele.
   os fluxos críticos — e roda dentro do Docker, então uma lib faltando no host nunca
   bloqueia a CI.
 - **GitOps com uma aplicação por ambiente.** Staging e produção são aplicações ArgoCD
-  separadas apontando para o mesmo Helm chart com values diferentes. Promover é mudar
-  values, não rodar `kubectl` na mão.
+  separadas apontando para o mesmo Helm chart com values diferentes. Promover é só
+  mudar os values.
 - **Observabilidade desde o primeiro dia.** Traces vão para o Tempo, métricas são
   coletadas pelo gateway do OTel Collector e enviadas ao Prometheus, logs vão para o
   Loki. É também um app de WebSocket o que finalmente me fez levar a sério as métricas
