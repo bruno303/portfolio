@@ -4,7 +4,7 @@
 # back (the sha images stay in GHCR).
 web:
   image:
-    tag: "1fb18f259ee686e442a2e78a1d408e770f99198b"
+    tag: "7b32bbdba3ad93ac54b33606f2f0d50287d124b8"
     pullPolicy: IfNotPresent
 api:
   image:
