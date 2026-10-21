@@ -37,13 +37,13 @@ So I only extract small tools out of repetition I have lived through.
   what the mockable application layer tests against.
 - **Reusable GitHub Actions.** Workflows (like the agent review and the CI helpers)
   published as reusable actions, so a new repository gets the same process by
-  referencing a version — not by copying YAML around.
+  referencing a version.
 - **VS Code extensions.** Two small ones born from daily annoyances around git
   worktrees and process signals, built to keep my own loops tight.
 
 ## Decisions and trade-offs
 
-- **Rule of three.** A tool gets extracted after the third copy, not the second. This
+- **Rule of three.** I only extract a tool after copying it a third time. This
   keeps the toolkit small and every abstraction justified by real duplication.
 - **Boring is a feature.** These tools have no plugins, no configuration files when
   avoidable, and few options. They either work in ten seconds or they are a bug.

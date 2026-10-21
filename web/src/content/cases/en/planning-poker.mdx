@@ -25,9 +25,9 @@ order: 2
 Planning poker needs a shared room, simultaneous votes and an instant reveal — in
 practice: WebSockets, shared state and a UI that never feels stale.
 
-I wanted more than a demo. This project is the round trip I use to validate platform
-decisions end to end: write the service, containerize it, publish images, deploy with
-GitOps, and then watch it under real traffic before anything else depends on it.
+I built it to test platform decisions end to end: write the service, containerize it,
+publish images, deploy with GitOps, and then watch it under real traffic before
+anything else depends on it.
 
 ## How it works
 
@@ -41,7 +41,7 @@ GitOps, and then watch it under real traffic before anything else depends on it.
 
 ## Decisions and trade-offs
 
-- **Redis pub/sub instead of in-memory broadcast.** In-memory is simpler and would work
+- **Redis pub/sub for broadcast.** In-memory is simpler and would work
   on a single replica, but it locks in a single point of failure. Pub/sub costs one
   extra hop and buys horizontal scale and rolling restarts that don't drop rooms.
 - **Layered backend (domain → application → infra).** The room rules are pure Go; the
@@ -52,7 +52,7 @@ GitOps, and then watch it under real traffic before anything else depends on it.
   critical flows — and runs inside Docker, so a missing host library can never block CI.
 - **GitOps with per-environment applications.** Staging and production are separate
   ArgoCD applications pointing at the same Helm chart with different values. Promotion
-  is a values change, not a manual `kubectl`.
+  is just a values change.
 - **Observability from day one.** Traces go to Tempo, metrics are scraped through the
   OTel Collector gateway into Prometheus, logs go to Loki. A WebSocket app is also what
   finally made me take per-connection metrics and reconnect behaviour seriously.

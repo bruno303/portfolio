@@ -1,5 +1,5 @@
 ---
-title: "Homelab: operando uma plataforma, não um monte de containers"
+title: "Meu homelab"
 summary: "Um cluster k3s self-hosted gerenciado inteiramente por GitOps: ArgoCD para entrega, External Secrets para credenciais, um pipeline de OpenTelemetry alimentando Prometheus, Loki e Tempo, backups com restic + rclone com verificador e zero portas abertas para a internet."
 role: "Design, operação e on-call"
 period: "Em andamento"
@@ -43,13 +43,13 @@ cluster aplicada como uma aplicação separada.
   futuro. Os manifests no repositório são a única verdade, e drift é bug.
 - **Secrets nunca vivem no Git.** O External Secrets Operator sincroniza de secret
   stores por ambiente, então o repositório pode ficar público sem virar risco.
-- **Túnel para dentro, não portas para fora.** O Cloudflare Tunnel publica serviços sem
-  abrir uma única porta de entrada e mantém o IP de casa invisível.
+- **Nenhuma porta aberta.** O Cloudflare Tunnel publica serviços sem abrir uma única
+  porta de entrada e mantém o IP de casa invisível.
 - **Observabilidade como um pipeline só.** As aplicações emitem OTLP; um gateway do
   collector distribui traces para o Tempo, métricas para o Prometheus (remote write) e
   logs para o Loki. Um pipeline significa um único lugar para depurar quando a
-  telemetria some — isso já aconteceu de verdade, e o conserto virou uma mudança na
-  config do collector, não em nove aplicações.
+  telemetria some — isso já aconteceu de verdade, e o conserto foi uma mudança só na
+  config do collector.
 - **Backup é código, e código é testado.** Snapshots com `restic` são copiados para um
   pendrive externo via `rclone` todos os dias às 03:00 (BRT), guiados por um Makefile,
   com um verificador que confere os snapshots. As lacunas restantes (snapshot de etcd,
