@@ -58,10 +58,13 @@ change and rolls the Deployments out; Cloudflare Tunnel publishes `portfolio.bso
 ## Roadmap
 
 - [x] v0 — scaffold: web + api + helm chart + CI
-- [ ] v1 — content pass (review the 4 case studies), CV PDF generated, OG images
-- [ ] v1.1 — deploy to the homelab: ArgoCD app, DNS, Cloudflare Tunnel
-- [ ] v2 — notes/blog (restore drills, ArgoCD tuning), "view a real trace of this page"
-- [ ] v2.1 — planning-poker live demo embedded in its case study
+- [x] v1 — content pass (4 case studies in EN + PT), CV PDFs, OG images
+- [x] v1.1 — deployed to the homelab: ArgoCD app, DNS, Cloudflare Tunnel
+- [ ] follow-up — planning-poker `active_*` metrics as gauges (ADR 0003)
+
+Dropped after v1.1: the embedded planning-poker demo, the "view a real trace of
+this page" feature, and a separate notes/blog section. The case studies stay the
+only long-form content, and the planning-poker case links out to the live demo.
 
 ## Decisions
 

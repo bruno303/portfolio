@@ -26,8 +26,9 @@ services:
     namespace: production
     pod_regex: "planning-poker-frontend.*"
 
-# Curated application metrics. OTel counters land in Prometheus with a _total
-# suffix; the `or` fallback keeps queries working if that convention changes.
+# Curated application metrics. Prometheus adds a _total suffix to counters, but
+# active_* are gauges and users_total is an up/down counter, so the `or` fallback
+# keeps each query working across both naming shapes.
 custom_metrics:
   - id: active_rooms
     label: "Active rooms"
